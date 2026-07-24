@@ -1,0 +1,62 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Enums\CefrLevel;
+use App\Enums\Skill;
+use App\Models\PlacementQuestion;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<PlacementQuestion>
+ */
+class PlacementQuestionFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'question' => fake()->sentence(10) . '?',
+            'skill' => fake()->randomElement(Skill::cases()),
+            'level' => fake()->randomElement(CefrLevel::cases()),
+        ];
+    }
+
+    public function grammar(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'skill' => Skill::Grammar,
+            'question' => fake()->randomElement([
+                'Choose the correct sentence:',
+                'Which sentence is grammatically correct?',
+                'Fill in the blank: She ___ to school every day.',
+                'What is the past tense of "go"?',
+            ]),
+        ]);
+    }
+
+    public function vocabulary(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'skill' => Skill::Vocabulary,
+            'question' => fake()->randomElement([
+                'What does "benevolent" mean?',
+                'Choose the synonym of "happy":',
+                'The opposite of "ancient" is:',
+                'Which word best completes the sentence?',
+            ]),
+        ]);
+    }
+
+    public function writing(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'skill' => Skill::Writing,
+            'question' => fake()->randomElement([
+                'Write a short paragraph describing your daily routine.',
+                'Describe your favorite place in 5-7 sentences.',
+                'What are your goals for learning English?',
+                'Write about a memorable experience you had recently.',
+            ]),
+        ]);
+    }
+}
