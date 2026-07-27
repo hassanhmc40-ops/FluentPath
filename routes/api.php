@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\PlacementTestController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RoadmapController;
+use App\Http\Controllers\Api\WritingSubmissionController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -29,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/quizzes/{id}', [QuizController::class, 'show']);
     Route::post('/quizzes/{id}/attempts', [QuizController::class, 'attempt']);
+
+    Route::post('/writing-submissions', [WritingSubmissionController::class, 'store']);
+    Route::get('/writing-submissions/{id}', [WritingSubmissionController::class, 'show']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
