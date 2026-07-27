@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\LessonProgressStatus;
+use App\Events\LessonCompleted;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LessonProgressResource;
 use App\Http\Resources\LessonResource;
@@ -36,6 +37,8 @@ class LessonController extends Controller
             ['user_id' => $request->user()->id, 'lesson_id' => $lesson->id],
             ['status' => LessonProgressStatus::Completed, 'completed_at' => now()]
         );
+
+        LessonCompleted::dispatch($request->user()->id, $lesson->id);
 
         return new LessonProgressResource($progress);
     }

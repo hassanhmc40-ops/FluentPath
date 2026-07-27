@@ -20,6 +20,11 @@ class Roadmap extends Model
         ];
     }
 
+    public function nextLesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class, 'next_lesson_id');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

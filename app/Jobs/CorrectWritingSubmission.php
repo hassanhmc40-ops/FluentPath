@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agents\WritingCorrectionAgent;
+use App\Events\WritingCorrected;
 use App\Models\Notification;
 use App\Models\WritingSubmission;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -71,6 +72,11 @@ Please provide a corrected version, a score (0-100), detailed feedback on gramma
                 'title' => 'Writing Correction Completed',
                 'message' => 'Your writing submission has been reviewed.',
             ]);
+
+            WritingCorrected::dispatch(
+                $this->writingSubmission->user_id,
+                $this->writingSubmission->id,
+            );
         } catch (\Throwable $e) {
             Log::error('WritingSubmission AI correction failed', [
                 'writing_submission_id' => $this->writingSubmission->id,
