@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\LessonController;
+use App\Http\Controllers\Api\Admin\LessonController as AdminLessonController;
 use App\Http\Controllers\Api\Admin\PlacementQuestionController;
-use App\Http\Controllers\Api\Admin\QuizController;
+use App\Http\Controllers\Api\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Api\Admin\QuizQuestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LessonController;
@@ -36,8 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::apiResource('lessons', LessonController::class);
-    Route::apiResource('quizzes', QuizController::class);
+    Route::apiResource('lessons', AdminLessonController::class);
+    Route::apiResource('quizzes', AdminQuizController::class);
     Route::apiResource('quiz-questions', QuizQuestionController::class);
     Route::apiResource('placement-questions', PlacementQuestionController::class);
 });

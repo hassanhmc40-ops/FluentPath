@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\QuizAttempted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SubmitQuizAttemptRequest;
 use App\Http\Resources\StudentQuizResource;
@@ -51,6 +52,8 @@ class QuizController extends Controller
             'score' => $score,
             'completed_at' => now(),
         ]);
+
+        QuizAttempted::dispatch($request->user()->id, $quiz->id, $score);
 
         return response()->json([
             'id' => $attempt->id,
