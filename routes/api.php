@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\Admin\PlacementQuestionController;
 use App\Http\Controllers\Api\Admin\QuizController;
 use App\Http\Controllers\Api\Admin\QuizQuestionController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\PlacementTestController;
+use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RoadmapController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +23,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/roadmaps', [RoadmapController::class, 'store']);
     Route::get('/roadmap', [RoadmapController::class, 'show']);
+
+    Route::get('/lessons', [LessonController::class, 'index']);
+    Route::post('/lessons/{id}/complete', [LessonController::class, 'complete']);
+
+    Route::get('/quizzes/{id}', [QuizController::class, 'show']);
+    Route::post('/quizzes/{id}/attempts', [QuizController::class, 'attempt']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
