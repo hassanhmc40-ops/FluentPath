@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\PlacementQuestionController;
 use App\Http\Controllers\Api\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Api\Admin\QuizQuestionController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\PlacementTestController;
 use App\Http\Controllers\Api\QuizController;
@@ -33,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/writing-submissions', [WritingSubmissionController::class, 'store']);
     Route::get('/writing-submissions/{id}', [WritingSubmissionController::class, 'show']);
+
+    Route::get('/dashboard', [DashboardController::class, 'show']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
