@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\QuizQuestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PlacementTestController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RoadmapController;
@@ -36,6 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/writing-submissions/{id}', [WritingSubmissionController::class, 'show']);
 
     Route::get('/dashboard', [DashboardController::class, 'show']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
