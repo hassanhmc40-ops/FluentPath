@@ -2,25 +2,23 @@
 
 namespace App\Services;
 
+use App\Enums\PlacementTestStatus;
+use App\Enums\WritingSubmissionStatus;
+use App\Models\LessonProgress;
 use App\Models\PlacementTest;
 use App\Models\Roadmap;
 use App\Models\RoadmapWeekLesson;
 use App\Models\WritingSubmission;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
     public function forUser(int $userId): array
     {
-        $latestPlacementTest = PlacementTest::where('user_id', $userId)
-            ->where('status', 'analyzed')
-            ->latest('id')
-            ->first();
+        $latestPlacementTest = PlacementTest::latestAnalyzedFor($userId)->first();
 
-        $latestRoadmap = Roadmap::where('user_id', $userId)
-            ->with('roadmapWeeks')
-            ->latest('id')
-            ->first();
+        $latestRoadmap = Roadmap::latestForUser($userId)->with('roadmapWeeks')->first();
 
         $cefrLevel = $latestPlacementTest?->cefr_level;
         $currentWeekNumber = null;
@@ -48,15 +46,12 @@ class DashboardService
             }
         }
 
-        $completedLessons = DB::table('lesson_progress')
-            ->where('user_id', $userId)
-            ->where('status', 'completed')
-            ->count();
+        $completedLessons = LessonProgress::completedFor($userId)->count();
 
         $totalLessons = DB::table('lessons')->count();
 
         $writingHistory = WritingSubmission::where('user_id', $userId)
-            ->where('status', 'corrected')
+            ->where('status', WritingSubmissionStatus::Corrected->value)
             ->whereNotNull('score')
             ->orderBy('submitted_at')
             ->get(['submitted_at', 'score']);
@@ -117,9 +112,7 @@ class DashboardService
             ->pluck('lesson_id')
             ->toArray();
 
-        return DB::table('lesson_progress')
-            ->where('user_id', $userId)
-            ->where('status', 'completed')
+        return LessonProgress::completedFor($userId)
             ->whereIn('lesson_id', $roadmapLessonIds)
             ->pluck('lesson_id')
             ->toArray();
@@ -128,7 +121,7 @@ class DashboardService
     private function computeSkillTrend(int $userId, string $field): array
     {
         $scores = PlacementTest::where('user_id', $userId)
-            ->where('status', 'analyzed')
+            ->where('status', PlacementTestStatus::Analyzed)
             ->whereNotNull($field)
             ->orderBy('id')
             ->pluck($field)
@@ -146,7 +139,7 @@ class DashboardService
         }
 
         $writingScores = WritingSubmission::where('user_id', $userId)
-            ->where('status', 'corrected')
+            ->where('status', WritingSubmissionStatus::Corrected->value)
             ->whereNotNull('score')
             ->orderBy('submitted_at')
             ->pluck('score')
@@ -223,7 +216,7 @@ class DashboardService
         $streak = 0;
         $expected = now()->startOfDay();
 
-        $firstDate = \Carbon\Carbon::parse($uniqueDates->first())->startOfDay();
+        $firstDate = Carbon::parse($uniqueDates->first())->startOfDay();
 
         if ($firstDate->ne($expected)) {
             if ($firstDate->eq($expected->copy()->subDay())) {
@@ -234,7 +227,7 @@ class DashboardService
         }
 
         foreach ($uniqueDates as $dateStr) {
-            $date = \Carbon\Carbon::parse($dateStr)->startOfDay();
+            $date = Carbon::parse($dateStr)->startOfDay();
 
             if ($date->ne($expected)) {
                 break;

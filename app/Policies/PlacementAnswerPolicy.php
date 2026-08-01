@@ -9,22 +9,22 @@ class PlacementAnswerPolicy
 {
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     public function view(User $user, PlacementAnswer $placementAnswer): bool
     {
-        return false;
+        return $placementAnswer->placementTest->user_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     public function update(User $user, PlacementAnswer $placementAnswer): bool
     {
-        return false;
+        return $placementAnswer->placementTest->user_id === $user->id;
     }
 
     public function delete(User $user, PlacementAnswer $placementAnswer): bool

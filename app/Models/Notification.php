@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Database\Factories\NotificationFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Fillable(['user_id', 'title', 'message', 'is_read'])]
 class Notification extends Model
 {
     /** @use HasFactory<NotificationFactory> */

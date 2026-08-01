@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\RoadmapStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRoadmapRequest;
 use App\Http\Resources\RoadmapResource;
 use App\Jobs\GenerateRoadmap;
 use App\Models\PlacementTest;
@@ -12,12 +14,9 @@ use Illuminate\Http\Request;
 
 class RoadmapController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(StoreRoadmapRequest $request): JsonResponse
     {
-        $latestTest = PlacementTest::where('user_id', $request->user()->id)
-            ->where('status', 'analyzed')
-            ->latest()
-            ->first();
+        $latestTest = PlacementTest::latestAnalyzedFor($request->user()->id)->first();
 
         if (! $latestTest) {
             return response()->json([
@@ -29,22 +28,20 @@ class RoadmapController extends Controller
             'user_id' => $request->user()->id,
             'placement_test_id' => $latestTest->id,
             'title' => 'Generating...',
-            'status' => 'pending',
         ]);
 
         GenerateRoadmap::dispatch($roadmap);
 
         return response()->json([
             'id' => $roadmap->id,
-            'status' => $roadmap->status,
+            'status' => RoadmapStatus::Pending->value,
         ], 202);
     }
 
     public function show(Request $request): JsonResponse|RoadmapResource
     {
-        $roadmap = Roadmap::where('user_id', $request->user()->id)
+        $roadmap = Roadmap::latestForUser($request->user()->id)
             ->with('roadmapWeeks.roadmapWeekLessons.lesson')
-            ->latest('id')
             ->first();
 
         if (! $roadmap) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\PlacementTestStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SubmitPlacementTestRequest;
 use App\Http\Resources\PlacementTestResource;
@@ -15,7 +16,6 @@ class PlacementTestController extends Controller
     {
         $placementTest = PlacementTest::create([
             'user_id' => $request->user()->id,
-            'status' => 'pending',
         ]);
 
         $answers = collect($request->answers)->map(fn ($a) => [
@@ -29,18 +29,14 @@ class PlacementTestController extends Controller
 
         return response()->json([
             'id' => $placementTest->id,
-            'status' => $placementTest->status,
+            'status' => PlacementTestStatus::Pending->value,
         ], 202);
     }
 
-    public function show($id): JsonResponse|PlacementTestResource
+    public function show(PlacementTest $placementTest): PlacementTestResource
     {
-        $placementTest = PlacementTest::with('placementAnswers')->findOrFail($id);
+        $this->authorize('view', $placementTest);
 
-        if ($placementTest->user_id !== auth()->id()) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
-
-        return new PlacementTestResource($placementTest);
+        return new PlacementTestResource($placementTest->load('placementAnswers'));
     }
 }

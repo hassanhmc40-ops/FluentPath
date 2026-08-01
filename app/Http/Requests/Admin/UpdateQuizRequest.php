@@ -8,15 +8,15 @@ class UpdateQuizRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->route('quiz'));
     }
 
     public function rules(): array
     {
         return [
             'lesson_id' => ['sometimes', 'integer', 'exists:lessons,id'],
-            'title' => ['sometimes', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'title' => ['sometimes', 'filled', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
 }

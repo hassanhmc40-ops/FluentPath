@@ -21,25 +21,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::post('/placement-tests', [PlacementTestController::class, 'store']);
-    Route::get('/placement-tests/{id}', [PlacementTestController::class, 'show']);
+    Route::post('/placement-tests', [PlacementTestController::class, 'store'])->middleware('throttle:ai');
+    Route::get('/placement-tests/{placement_test}', [PlacementTestController::class, 'show']);
 
-    Route::post('/roadmaps', [RoadmapController::class, 'store']);
-    Route::get('/roadmap', [RoadmapController::class, 'show']);
+    Route::post('/roadmaps', [RoadmapController::class, 'store'])->middleware('throttle:ai');
+    Route::get('/roadmaps', [RoadmapController::class, 'show']);
 
     Route::get('/lessons', [LessonController::class, 'index']);
-    Route::post('/lessons/{id}/complete', [LessonController::class, 'complete']);
+    Route::post('/lessons/{lesson}/complete', [LessonController::class, 'complete']);
 
-    Route::get('/quizzes/{id}', [QuizController::class, 'show']);
-    Route::post('/quizzes/{id}/attempts', [QuizController::class, 'attempt']);
+    Route::get('/quizzes/{quiz}', [QuizController::class, 'show']);
+    Route::post('/quizzes/{quiz}/attempts', [QuizController::class, 'attempt']);
 
-    Route::post('/writing-submissions', [WritingSubmissionController::class, 'store']);
-    Route::get('/writing-submissions/{id}', [WritingSubmissionController::class, 'show']);
+    Route::post('/writing-submissions', [WritingSubmissionController::class, 'store'])->middleware('throttle:ai');
+    Route::get('/writing-submissions/{writing_submission}', [WritingSubmissionController::class, 'show']);
 
     Route::get('/dashboard', [DashboardController::class, 'show']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {

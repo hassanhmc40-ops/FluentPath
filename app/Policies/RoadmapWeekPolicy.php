@@ -9,12 +9,12 @@ class RoadmapWeekPolicy
 {
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     public function view(User $user, RoadmapWeek $roadmapWeek): bool
     {
-        return false;
+        return $roadmapWeek->roadmap->user_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -24,7 +24,7 @@ class RoadmapWeekPolicy
 
     public function update(User $user, RoadmapWeek $roadmapWeek): bool
     {
-        return false;
+        return $roadmapWeek->roadmap->user_id === $user->id;
     }
 
     public function delete(User $user, RoadmapWeek $roadmapWeek): bool

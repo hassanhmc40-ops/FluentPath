@@ -15,7 +15,7 @@ class PlacementQuestionFactory extends Factory
     public function definition(): array
     {
         return [
-            'question' => fake()->sentence(10) . '?',
+            'question' => fake()->sentence(10).'?',
             'skill' => fake()->randomElement(Skill::cases()),
             'level' => fake()->randomElement(CefrLevel::cases()),
         ];

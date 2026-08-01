@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Enums\CefrLevel;
 use App\Enums\Skill;
 use Database\Factories\PlacementQuestionFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable(['question', 'skill', 'level'])]
 class PlacementQuestion extends Model
 {
     /** @use HasFactory<PlacementQuestionFactory> */

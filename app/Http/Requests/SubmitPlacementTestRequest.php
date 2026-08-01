@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\PlacementTest;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,20 +10,20 @@ class SubmitPlacementTestRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('create', PlacementTest::class);
     }
 
     public function rules(): array
     {
         return [
-            'answers' => ['required', 'array', 'min:1'],
+            'answers' => ['required', 'array', 'min:1', 'max:50'],
             'answers.*.placement_question_id' => [
                 'required',
                 'integer',
                 'distinct',
                 Rule::exists('placement_questions', 'id'),
             ],
-            'answers.*.answer' => ['required', 'string'],
+            'answers.*.answer' => ['required', 'string', 'max:2000'],
         ];
     }
 

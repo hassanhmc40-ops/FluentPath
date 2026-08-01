@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\QuizAttempt;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,18 +10,18 @@ class SubmitQuizAttemptRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('create', QuizAttempt::class);
     }
 
     public function rules(): array
     {
         return [
-            'answers' => ['required', 'array', 'min:1'],
+            'answers' => ['required', 'array', 'min:1', 'max:100'],
             'answers.*.quiz_question_id' => [
                 'required',
                 'integer',
                 'distinct',
-                Rule::exists('quiz_questions', 'id')->where('quiz_id', $this->route('id')),
+                Rule::exists('quiz_questions', 'id')->where('quiz_id', $this->route('quiz')->id),
             ],
             'answers.*.selected_option' => ['required', 'string', Rule::in(['a', 'b', 'c', 'd'])],
         ];

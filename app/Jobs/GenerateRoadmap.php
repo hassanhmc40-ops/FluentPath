@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agents\RoadmapGenerationAgent;
+use App\Enums\RoadmapStatus;
 use App\Models\Lesson;
 use App\Models\Notification;
 use App\Models\Roadmap;
@@ -25,7 +26,7 @@ class GenerateRoadmap implements ShouldQueue
     {
         $this->roadmap->loadMissing('placementTest');
 
-        $this->roadmap->update(['status' => 'processing']);
+        $this->roadmap->update(['status' => RoadmapStatus::Processing]);
 
         $placementTest = $this->roadmap->placementTest;
 
@@ -34,15 +35,15 @@ class GenerateRoadmap implements ShouldQueue
         $prompt = "You are an expert English teacher creating a personalized 4-week learning roadmap.
 
 Placement Test Results:
-- CEFR Level: {$placementTest->cefr_level}
+- CEFR Level: {$placementTest->cefr_level?->value}
 - Grammar Score: {$placementTest->grammar_score}
 - Vocabulary Score: {$placementTest->vocabulary_score}
 - Writing Score: {$placementTest->writing_score}
-- Strengths: " . implode(', ', $placementTest->strengths ?? []) . "
-- Weaknesses: " . implode(', ', $placementTest->weaknesses ?? []) . "
+- Strengths: ".implode(', ', $placementTest->strengths ?? []).'
+- Weaknesses: '.implode(', ', $placementTest->weaknesses ?? []).'
 
 Available Lessons (id, title, skill, level):
-" . $lessons->map(fn ($l) => "- {$l->id}: {$l->title} ({$l->skill}, {$l->level})")->implode("\n") . "
+'.$lessons->map(fn ($l) => "- {$l->id}: {$l->title} ({$l->skill?->value}, {$l->level?->value})")->implode("\n")."
 
 Create a 4-week roadmap. For each week provide an objective and a list of lesson_ids from the available lessons above that best address the learner's weaknesses while building on their strengths. Order lessons within each week by recommended sequence.";
 
@@ -63,7 +64,7 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                     'response' => $data,
                 ]);
 
-                $this->roadmap->update(['status' => 'failed']);
+                $this->roadmap->update(['status' => RoadmapStatus::Failed]);
 
                 return;
             }
@@ -80,7 +81,7 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                     'missing_lesson_ids' => $missingIds->toArray(),
                 ]);
 
-                $this->roadmap->update(['status' => 'failed']);
+                $this->roadmap->update(['status' => RoadmapStatus::Failed]);
 
                 return;
             }
@@ -102,7 +103,7 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
 
             $this->roadmap->update([
                 'title' => $data['title'],
-                'status' => 'generated',
+                'status' => RoadmapStatus::Generated,
                 'generated_at' => now(),
             ]);
 
@@ -117,7 +118,7 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                 'error' => $e->getMessage(),
             ]);
 
-            $this->roadmap->update(['status' => 'failed']);
+            $this->roadmap->update(['status' => RoadmapStatus::Failed]);
         }
     }
 

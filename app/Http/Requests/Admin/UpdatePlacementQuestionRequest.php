@@ -2,21 +2,24 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\CefrLevel;
+use App\Enums\Skill;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePlacementQuestionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->route('placement_question'));
     }
 
     public function rules(): array
     {
         return [
-            'question' => ['sometimes', 'string'],
-            'skill' => ['sometimes', 'string', 'in:grammar,vocabulary,writing'],
-            'level' => ['sometimes', 'string', 'in:A1,A2,B1,B2,C1'],
+            'question' => ['sometimes', 'filled', 'string', 'max:2000'],
+            'skill' => ['sometimes', 'filled', Rule::enum(Skill::class)],
+            'level' => ['sometimes', 'filled', Rule::enum(CefrLevel::class)],
         ];
     }
 }

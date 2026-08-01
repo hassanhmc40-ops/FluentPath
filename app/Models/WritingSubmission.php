@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Enums\WritingSubmissionStatus;
 use Database\Factories\WritingSubmissionFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Fillable(['user_id', 'prompt', 'original_text', 'corrected_text', 'grammar_feedback', 'vocabulary_feedback', 'fluency_feedback', 'mistakes', 'recommendations', 'next_topics', 'score', 'status', 'submitted_at'])]
 class WritingSubmission extends Model
 {
     /** @use HasFactory<WritingSubmissionFactory> */
