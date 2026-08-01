@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Database\Factories\PlacementAnswerFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Fillable(['placement_test_id', 'placement_question_id', 'answer', 'score', 'feedback'])]
 class PlacementAnswer extends Model
 {
     /** @use HasFactory<PlacementAnswerFactory> */

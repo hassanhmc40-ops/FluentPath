@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agents\WritingCorrectionAgent;
+use App\Enums\WritingSubmissionStatus;
 use App\Events\WritingCorrected;
 use App\Models\Notification;
 use App\Models\WritingSubmission;
@@ -22,7 +23,7 @@ class CorrectWritingSubmission implements ShouldQueue
 
     public function handle(): void
     {
-        $this->writingSubmission->update(['status' => 'processing']);
+        $this->writingSubmission->update(['status' => WritingSubmissionStatus::Processing]);
 
         $prompt = "You are an expert English teacher. Correct the following writing submission.
 
@@ -50,13 +51,13 @@ Please provide a corrected version, a score (0-100), detailed feedback on gramma
                     'response' => $data,
                 ]);
 
-                $this->writingSubmission->update(['status' => 'failed']);
+                $this->writingSubmission->update(['status' => WritingSubmissionStatus::Failed]);
 
                 return;
             }
 
             $this->writingSubmission->update([
-                'status' => 'corrected',
+                'status' => WritingSubmissionStatus::Corrected,
                 'corrected_text' => $data['corrected_text'],
                 'score' => $data['score'],
                 'grammar_feedback' => $data['grammar_feedback'],
@@ -83,7 +84,7 @@ Please provide a corrected version, a score (0-100), detailed feedback on gramma
                 'error' => $e->getMessage(),
             ]);
 
-            $this->writingSubmission->update(['status' => 'failed']);
+            $this->writingSubmission->update(['status' => WritingSubmissionStatus::Failed]);
         }
     }
 

@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Agents\PlacementEvaluationAgent;
+use App\Enums\CefrLevel;
+use App\Enums\PlacementTestStatus;
 use App\Models\Notification;
 use App\Models\PlacementTest;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,7 +25,7 @@ class EvaluatePlacementTest implements ShouldQueue
     {
         $this->placementTest->loadMissing('placementAnswers.placementQuestion');
 
-        $this->placementTest->update(['status' => 'processing']);
+        $this->placementTest->update(['status' => PlacementTestStatus::Processing]);
 
         $answersBySkill = $this->placementTest->placementAnswers
             ->groupBy(fn ($a) => $a->placementQuestion->skill->value)
@@ -34,9 +36,9 @@ class EvaluatePlacementTest implements ShouldQueue
 
         $prompt = "You are an expert English language teacher. Evaluate this placement test submission holistically.
 
-Grammar answers:\n" . json_encode($answersBySkill->get('grammar', []), JSON_PRETTY_PRINT) .
-"\n\nVocabulary answers:\n" . json_encode($answersBySkill->get('vocabulary', []), JSON_PRETTY_PRINT) .
-"\n\nWriting answers:\n" . json_encode($answersBySkill->get('writing', []), JSON_PRETTY_PRINT) .
+Grammar answers:\n".json_encode($answersBySkill->get('grammar', []), JSON_PRETTY_PRINT).
+"\n\nVocabulary answers:\n".json_encode($answersBySkill->get('vocabulary', []), JSON_PRETTY_PRINT).
+"\n\nWriting answers:\n".json_encode($answersBySkill->get('writing', []), JSON_PRETTY_PRINT).
 "\n\nAssess the learner's overall CEFR level (A1-C1), assign per-skill scores (0-100), list strengths and weaknesses, and provide a brief reasoning for your assessment.";
 
         try {
@@ -56,13 +58,13 @@ Grammar answers:\n" . json_encode($answersBySkill->get('grammar', []), JSON_PRET
                     'response' => $data,
                 ]);
 
-                $this->placementTest->update(['status' => 'failed']);
+                $this->placementTest->update(['status' => PlacementTestStatus::Failed]);
 
                 return;
             }
 
             $this->placementTest->update([
-                'status' => 'analyzed',
+                'status' => PlacementTestStatus::Analyzed,
                 'cefr_level' => $data['cefr_level'],
                 'grammar_score' => $data['grammar_score'],
                 'vocabulary_score' => $data['vocabulary_score'],
@@ -83,7 +85,7 @@ Grammar answers:\n" . json_encode($answersBySkill->get('grammar', []), JSON_PRET
                 'error' => $e->getMessage(),
             ]);
 
-            $this->placementTest->update(['status' => 'failed']);
+            $this->placementTest->update(['status' => PlacementTestStatus::Failed]);
         }
     }
 
@@ -101,7 +103,7 @@ Grammar answers:\n" . json_encode($answersBySkill->get('grammar', []), JSON_PRET
             }
         }
 
-        if (! in_array($data['cefr_level'], ['A1', 'A2', 'B1', 'B2', 'C1'], true)) {
+        if (! CefrLevel::tryFrom($data['cefr_level'])) {
             return false;
         }
 

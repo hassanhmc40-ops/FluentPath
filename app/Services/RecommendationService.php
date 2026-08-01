@@ -2,31 +2,24 @@
 
 namespace App\Services;
 
-use App\Models\Lesson;
+use App\Models\LessonProgress;
 use App\Models\Notification;
 use App\Models\Roadmap;
-use App\Models\RoadmapWeekLesson;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class RecommendationService
 {
     public function refreshForUser(int $userId): void
     {
-        $roadmap = Roadmap::where('user_id', $userId)
+        $roadmap = Roadmap::latestForUser($userId)
             ->with('roadmapWeeks.roadmapWeekLessons.lesson')
-            ->latest('id')
             ->first();
 
         if (! $roadmap) {
             return;
         }
 
-        $completedLessonIds = DB::table('lesson_progress')
-            ->where('user_id', $userId)
-            ->where('status', 'completed')
-            ->pluck('lesson_id')
-            ->toArray();
+        $completedLessonIds = LessonProgress::completedFor($userId)->pluck('lesson_id')->toArray();
 
         $nextLesson = null;
         $nextTopic = null;
@@ -38,7 +31,7 @@ class RecommendationService
             foreach ($weekLessons as $wl) {
                 if (! in_array($wl->lesson_id, $completedLessonIds, true)) {
                     $nextLesson = $wl->lesson;
-                    $nextTopic = $wl->lesson?->skill?->value ?? $wl->lesson?->skill;
+                    $nextTopic = $wl->lesson?->skill?->value;
                     break 2;
                 }
             }

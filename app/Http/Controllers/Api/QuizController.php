@@ -8,22 +8,20 @@ use App\Http\Requests\SubmitQuizAttemptRequest;
 use App\Http\Resources\StudentQuizResource;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
-use App\Models\QuizQuestion;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class QuizController extends Controller
 {
-    public function show($id): JsonResponse|StudentQuizResource
+    public function show(Quiz $quiz): StudentQuizResource
     {
-        $quiz = Quiz::with('quizQuestions')->findOrFail($id);
+        $this->authorize('view', $quiz);
 
-        return new StudentQuizResource($quiz);
+        return new StudentQuizResource($quiz->load('quizQuestions'));
     }
 
-    public function attempt(SubmitQuizAttemptRequest $request, $id): JsonResponse
+    public function attempt(SubmitQuizAttemptRequest $request, Quiz $quiz): JsonResponse
     {
-        $quiz = Quiz::with('quizQuestions')->findOrFail($id);
+        $this->authorize('create', QuizAttempt::class);
 
         $correctCount = 0;
         $total = $quiz->quizQuestions->count();

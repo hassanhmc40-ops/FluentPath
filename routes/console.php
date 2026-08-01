@@ -1,8 +1,8 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Notification;
 use App\Models\Roadmap;
-use App\Models\User;
 use App\Services\RecommendationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -15,17 +15,17 @@ Schedule::call(function () {
     $reminderSent = 0;
     $refreshTriggered = 0;
 
-    $latestActivities = DB::table(DB::raw('(' . implode(' UNION ALL ', [
-            'SELECT user_id, MAX(completed_at) as last_activity FROM lesson_progress WHERE completed_at IS NOT NULL GROUP BY user_id',
-            'SELECT user_id, MAX(completed_at) as last_activity FROM quiz_attempts WHERE completed_at IS NOT NULL GROUP BY user_id',
-            'SELECT user_id, MAX(submitted_at) as last_activity FROM writing_submissions WHERE submitted_at IS NOT NULL GROUP BY user_id',
-        ]) . ') as activities'))
+    $latestActivities = DB::table(DB::raw('('.implode(' UNION ALL ', [
+        'SELECT user_id, MAX(completed_at) as last_activity FROM lesson_progress WHERE completed_at IS NOT NULL GROUP BY user_id',
+        'SELECT user_id, MAX(completed_at) as last_activity FROM quiz_attempts WHERE completed_at IS NOT NULL GROUP BY user_id',
+        'SELECT user_id, MAX(submitted_at) as last_activity FROM writing_submissions WHERE submitted_at IS NOT NULL GROUP BY user_id',
+    ]).') as activities'))
         ->select('user_id', DB::raw('MAX(last_activity) as last_activity'))
         ->groupBy('user_id');
 
     $inactiveUserIds = DB::table('users')
         ->joinSub($latestActivities, 'la', 'users.id', '=', 'la.user_id')
-        ->where('users.role', 'student')
+        ->where('users.role', UserRole::Student->value)
         ->where('la.last_activity', '<', now()->subDays($reminderDays))
         ->pluck('users.id');
 
@@ -56,7 +56,7 @@ Schedule::call(function () {
 
     $activeUserIds = DB::table('users')
         ->joinSub($latestActivities, 'la', 'users.id', '=', 'la.user_id')
-        ->where('users.role', 'student')
+        ->where('users.role', UserRole::Student->value)
         ->where('la.last_activity', '>=', now()->subDays($reminderDays))
         ->pluck('users.id')
         ->toArray();

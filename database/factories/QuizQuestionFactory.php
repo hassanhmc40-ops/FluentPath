@@ -22,12 +22,12 @@ class QuizQuestionFactory extends Factory
 
         return [
             'quiz_id' => Quiz::factory(),
-            'question' => fake()->sentence(8) . '?',
+            'question' => fake()->sentence(8).'?',
             'option_a' => $options[0],
             'option_b' => $options[1],
             'option_c' => $options[2],
             'option_d' => $options[3],
-            'correct_answer' => fake()->randomElement($options),
+            'correct_answer' => fake()->randomElement(['a', 'b', 'c', 'd']),
         ];
     }
 }

@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Enums\CefrLevel;
 use App\Enums\Skill;
 use Database\Factories\LessonFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable(['title', 'skill', 'level'])]
 class Lesson extends Model
 {
     /** @use HasFactory<LessonFactory> */

@@ -17,7 +17,7 @@ class WritingCorrectionAgent extends AnonymousAgent implements HasStructuredOutp
             'vocabulary_feedback' => $schema->string(),
             'fluency_feedback' => $schema->string(),
             'mistakes' => $schema->array()->items(
-                $schema->object()->properties([
+                $schema->object([
                     'original' => $schema->string(),
                     'correction' => $schema->string(),
                     'rule' => $schema->string(),

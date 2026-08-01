@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\WritingSubmissionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SubmitWritingSubmissionRequest;
 use App\Http\Resources\WritingSubmissionResource;
 use App\Jobs\CorrectWritingSubmission;
 use App\Models\WritingSubmission;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class WritingSubmissionController extends Controller
 {
@@ -18,7 +18,6 @@ class WritingSubmissionController extends Controller
             'user_id' => $request->user()->id,
             'prompt' => $request->prompt,
             'original_text' => $request->original_text,
-            'status' => 'pending',
             'submitted_at' => now(),
         ]);
 
@@ -26,18 +25,14 @@ class WritingSubmissionController extends Controller
 
         return response()->json([
             'id' => $submission->id,
-            'status' => $submission->status,
+            'status' => WritingSubmissionStatus::Pending->value,
         ], 202);
     }
 
-    public function show($id): JsonResponse|WritingSubmissionResource
+    public function show(WritingSubmission $writingSubmission): WritingSubmissionResource
     {
-        $submission = WritingSubmission::findOrFail($id);
+        $this->authorize('view', $writingSubmission);
 
-        if ($submission->user_id !== auth()->id()) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
-
-        return new WritingSubmissionResource($submission);
+        return new WritingSubmissionResource($writingSubmission);
     }
 }

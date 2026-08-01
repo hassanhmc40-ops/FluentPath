@@ -8,26 +8,26 @@ class UserPolicy
 {
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 
-    public function view(User $user, User $model): bool
+    public function view(User $user, User $target): bool
     {
-        return false;
+        return $user->id === $target->id || $user->isAdmin();
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    public function update(User $user, User $model): bool
+    public function update(User $user, User $target): bool
     {
-        return false;
+        return $user->id === $target->id || $user->isAdmin();
     }
 
-    public function delete(User $user, User $model): bool
+    public function delete(User $user, User $target): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 }
