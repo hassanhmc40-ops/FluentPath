@@ -1,7 +1,16 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    $response->assertStatus(200);
+uses(RefreshDatabase::class);
+
+test('guests hitting the root are sent to the login page', function () {
+    $this->get('/')->assertRedirect('/login');
+});
+
+test('authenticated users hitting the root go to the dashboard', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/')->assertRedirect('/dashboard');
 });

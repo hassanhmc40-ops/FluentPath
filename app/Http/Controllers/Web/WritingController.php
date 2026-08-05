@@ -21,6 +21,15 @@ class WritingController extends Controller
         return view('writing.index', compact('submissions'));
     }
 
+    public function submissions(Request $request): View
+    {
+        $submissions = WritingSubmission::where('user_id', $request->user()->id)
+            ->orderByDesc('submitted_at')
+            ->get();
+
+        return view('writing.submissions', compact('submissions'));
+    }
+
     public function store(SubmitWritingSubmissionRequest $request): RedirectResponse
     {
         $submission = WritingSubmission::create([

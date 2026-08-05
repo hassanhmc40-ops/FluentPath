@@ -1,0 +1,459 @@
+﻿<script type="text/x-dc" data-dc-script="" data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;login&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;register&quot;,&quot;onboarding&quot;,&quot;dash&quot;,&quot;test&quot;,&quot;roadmap&quot;,&quot;lessons&quot;,&quot;lessonDetail&quot;,&quot;exercise&quot;,&quot;writing&quot;,&quot;subs&quot;,&quot;progress&quot;,&quot;notifs&quot;,&quot;settings&quot;,&quot;adminDash&quot;,&quot;adminLessons&quot;,&quot;adminExercises&quot;,&quot;adminStudents&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;showQueueStatus&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: null, role: "student", bell: false,
+    q: 0, testPhase: "intro", step: 0, answers: {}, essay: "",
+    writing: "idle",
+    text: "Yesterday I go to the market with my sister. We buy fruits and we talk about her new job. It was a good day because normally I stay at home all the weekend.",
+    filter: "All", done: { 1: true, 3: true }, lessonId: 2,
+    authMode: "login", onb: 0, onbPicks: {},
+    ex: 0, exScore: 0, exFb: null, exPhase: "run",
+    formOpen: false, prefs: { reminders: true, digest: false, sound: false },
+    notifsRead: false
+  };
+
+  steps = ["Parsing submissionâ€¦", "Scoring grammar & vocabularyâ€¦", "Reading holistic responseâ€¦", "Validating JSON schemaâ€¦"];
+
+  run(next) {
+    clearInterval(this.timer);
+    this.setState({ step: 0 });
+    let i = 0;
+    this.timer = setInterval(() => {
+      i++;
+      if (i >= this.steps.length) { clearInterval(this.timer); next(); }
+      else this.setState({ step: i });
+    }, 760);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  questions = [
+    { part: 1, skill: "GRAMMAR", text: "By the time we arrived, the film ______ for twenty minutes.", options: ["had been playing", "was play", "has played", "is playing"] },
+    { part: 1, skill: "GRAMMAR", text: "If she ______ earlier, she would have caught the train.", options: ["had left", "would leave", "leaves", "was leaving"] },
+    { part: 2, skill: "VOCABULARY", text: "Choose the word closest in meaning to â€œreluctantâ€.", options: ["unwilling", "eager", "careless", "sudden"] },
+    { part: 2, skill: "VOCABULARY", text: "Complete: â€œShe ______ a decision about the offer yesterday.â€", options: ["made", "did", "took out", "gave"] },
+    { part: 3, skill: "READING", passage: "The company delayed the launch by two weeks. Despite the delay, the team met the original deadline for the client demo, largely because two engineers rewrote the reporting module over a single weekend.", text: "What does the passage imply about the delay?", options: ["It did not prevent the demo deadline", "The demo was cancelled", "There was no delay at all", "The client rejected the work"] },
+    { part: 3, skill: "READING", passage: "The company delayed the launch by two weeks. Despite the delay, the team met the original deadline for the client demo, largely because two engineers rewrote the reporting module over a single weekend.", text: "Why did the team still meet the deadline?", options: ["Two engineers rewrote a module quickly", "The deadline was moved", "The client reduced the scope", "The launch was cancelled"] },
+    { part: 4, skill: "WRITING", writing: true, text: "Write a short text: describe a habit you changed this year and what made you change it." }
+  ];
+
+  partMeta = [
+    { n: 1, name: "Grammar", note: "2 targeted items on tense and condition." },
+    { n: 2, name: "Vocabulary", note: "2 items on meaning and collocation." },
+    { n: 3, name: "Reading", note: "One passage, 2 comprehension items." },
+    { n: 4, name: "Writing", note: "One free text, 60â€“100 words." }
+  ];
+
+  drills = [
+    { text: "She ______ in Rabat since 2019.", options: ["has lived", "lives", "is living", "lived"], answer: 0, why: "Present Perfect with â€œsinceâ€ for an unfinished period." },
+    { text: "I finished the report ______ I was very tired.", options: ["although", "because", "so", "unless"], answer: 0, why: "â€œAlthoughâ€ introduces contrast between the two clauses." },
+    { text: "We ______ dinner when the power cut off.", options: ["were having", "have", "had have", "are having"], answer: 0, why: "Past Continuous for an action interrupted by another." },
+    { text: "He has worked here ______ three years.", options: ["for", "since", "from", "during"], answer: 0, why: "â€œForâ€ + duration, â€œsinceâ€ + starting point." }
+  ];
+
+  onboarding = [
+    { title: "What brings you here?", sub: "This shapes the tone of your roadmap, not your level. Only the placement test decides that.", options: [["Work & interviews", "Emails, meetings, reporting"], ["Study & exams", "IELTS, TOEFL, university"], ["Travel & daily life", "Conversation and confidence"], ["Not sure yet", "Let the test decide"]] },
+    { title: "How much time per week?", sub: "The AI sizes each week of the roadmap around this budget.", options: [["1â€“2 hours", "Light, one lesson a week"], ["3â€“4 hours", "Recommended pace"], ["5â€“7 hours", "Fast track"], ["8+ hours", "Intensive"]] },
+    { title: "Where do you struggle most?", sub: "A hint only â€” the placement test can and often does disagree.", options: [["Grammar rules", "Tenses, articles, prepositions"], ["Vocabulary", "Words don't come fast enough"], ["Writing", "Ideas don't connect"], ["Reading speed", "Long texts are slow"]] }
+  ];
+
+  titles = {
+    dash: ["Adaptive learning cycle", "Dashboard"],
+    test: ["Holistic AI evaluation", "Placement test"],
+    roadmap: ["4 weeks, regenerated as you learn", "Roadmap"],
+    lessons: ["Lessons & exercises", "Catalog"],
+    lessonDetail: ["Lesson", "Reading"],
+    exercise: ["Practice", "Exercise player"],
+    writing: ["Submit Â· correct Â· iterate", "Writing studio"],
+    subs: ["Writing history", "My submissions"],
+    progress: ["Everything you have done", "Progress"],
+    notifs: ["Async results & reminders", "Notifications"],
+    settings: ["Profile & preferences", "Settings"],
+    adminDash: ["Platform usage", "Admin overview"],
+    adminLessons: ["Catalog management", "Lessons"],
+    adminExercises: ["Catalog management", "Exercises"],
+    adminStudents: ["Engagement monitoring", "Students"]
+  };
+
+  lessonData = [
+    { id: 1, skill: "Grammar", level: "B1", title: "Present Perfect vs Past Simple", desc: "The single distinction that unlocks natural narration." },
+    { id: 2, skill: "Vocabulary", level: "B1", title: "Connectors for longer sentences", desc: "However, whereas, as long as â€” and where they go." },
+    { id: 3, skill: "Reading", level: "A2", title: "Skimming for the main idea", desc: "Read a short article and extract intent in one pass." },
+    { id: 4, skill: "Writing", level: "B1", title: "Paragraph shape", desc: "Topic sentence, evidence, closing move." },
+    { id: 5, skill: "Grammar", level: "B2", title: "Conditionals beyond the basics", desc: "Mixed conditionals for hypothetical past." },
+    { id: 6, skill: "Vocabulary", level: "B1", title: "Everyday collocations", desc: "Make vs do, take vs have â€” 40 high-frequency pairs." }
+  ];
+
+  go = (s) => () => this.setState({ screen: s, bell: false });
+
+  renderVals() {
+    const s = this.state;
+    const screen = s.screen || this.props.startScreen || "login";
+    const admin = s.role === "admin";
+    const q = this.questions[s.q];
+    const meta = this.titles[screen] || ["", ""];
+    const drill = this.drills[Math.min(s.ex, 3)];
+    const lesson = this.lessonData.find(l => l.id === s.lessonId) || this.lessonData[1];
+    const onb = this.onboarding[s.onb] || this.onboarding[0];
+    const visible = this.lessonData.filter(l => s.filter === "All" || l.skill === s.filter);
+    const isAuth = screen === "login" || screen === "register";
+
+    const studentNav = [
+      ["group", "", "Learn"],
+      ["dash", "01", "Dashboard"], ["test", "02", "Placement test"], ["roadmap", "03", "Roadmap"],
+      ["lessons", "04", "Lessons"], ["exercise", "05", "Exercises"],
+      ["group", "", "Practice"],
+      ["writing", "06", "Writing studio"], ["subs", "07", "My submissions"],
+      ["group", "", "Account"],
+      ["progress", "08", "Progress"], ["notifs", "09", "Notifications"], ["settings", "10", "Settings"]
+    ];
+    const adminNav = [
+      ["group", "", "Platform"],
+      ["adminDash", "01", "Overview"], ["adminStudents", "02", "Students"],
+      ["group", "", "Catalog"],
+      ["adminLessons", "03", "Lessons"], ["adminExercises", "04", "Exercises"],
+      ["group", "", "Account"],
+      ["notifs", "05", "Notifications"], ["settings", "06", "Settings"]
+    ];
+
+    return {
+      isAuth, isOnboarding: screen === "onboarding", inApp: !isAuth && screen !== "onboarding",
+      crumb: meta[0], title: meta[1],
+      roleLabel: admin ? "Admin console" : "AI Coach",
+      isStudent: !admin,
+      userMeta: admin ? "Admin Â· Catalog" : "Student Â· B1",
+      otherRole: admin ? "student" : "admin",
+      switchRole: () => this.setState({ role: admin ? "student" : "admin", screen: admin ? "dash" : "adminDash", bell: false }),
+      logout: () => this.setState({ screen: "login", bell: false }),
+      showQueue: this.props.showQueueStatus !== false,
+
+      authTabs: [["login", "Sign in"], ["register", "Create account"]].map(([k, label]) => ({
+        label, go: this.go(k),
+        bg: screen === k ? "#FFFDFA" : "transparent",
+        fg: screen === k ? "#17211E" : "#8A8378"
+      })),
+      authTitle: screen === "register" ? "Create your learning space" : "Welcome back, Hassan",
+      authSub: screen === "register" ? "No level to pick â€” the placement test decides it." : "Your roadmap is in week 3 of 4.",
+      authCta: screen === "register" ? "Create account â†’" : "Sign in â†’",
+      authFields: screen === "register"
+        ? [{ label: "Full name", type: "text", placeholder: "Hassan", value: "" }, { label: "Email", type: "email", placeholder: "you@example.com", value: "" }, { label: "Password", type: "password", placeholder: "At least 8 characters", value: "" }]
+        : [{ label: "Email", type: "email", placeholder: "you@example.com", value: "hassan@example.com" }, { label: "Password", type: "password", placeholder: "â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢", value: "" }],
+      authSubmit: () => this.setState({ screen: screen === "register" ? "onboarding" : "dash", role: "student" }),
+      demoStudent: () => this.setState({ screen: "dash", role: "student" }),
+      demoAdmin: () => this.setState({ screen: "adminDash", role: "admin" }),
+      authStats: [{ v: "A1â€“C1", l: "levels covered" }, { v: "4 weeks", l: "per roadmap cycle" }, { v: "0 blocking", l: "AI calls, all queued" }],
+
+      onbNum: s.onb + 1, onbTitle: onb.title, onbSub: onb.sub,
+      onbDots: this.onboarding.map((_, i) => ({ bg: i <= s.onb ? "#0E6B5C" : "#E0D8CC" })),
+      onbOptions: onb.options.map(([title, note]) => ({
+        title, note,
+        pick: () => this.setState({ onbPicks: Object.assign({}, s.onbPicks, { [s.onb]: title }) }),
+        border: s.onbPicks[s.onb] === title ? "#0E6B5C" : "#E5DDD2",
+        bg: s.onbPicks[s.onb] === title ? "#F1F8F5" : "#FFFEFC"
+      })),
+      onbCta: s.onb === 2 ? "Start the placement test â†’" : "Continue â†’",
+      onbNext: () => s.onb === 2 ? this.setState({ screen: "test", testPhase: "intro", q: 0, answers: {}, essay: "" }) : this.setState({ onb: s.onb + 1 }),
+      onbBack: () => s.onb === 0 ? this.setState({ screen: "register" }) : this.setState({ onb: s.onb - 1 }),
+
+      nav: (admin ? adminNav : studentNav).map(([k, code, label]) => ({
+        isGroup: k === "group", isLink: k !== "group",
+        code, label, go: this.go(k),
+        badge: k === "notifs" && !s.notifsRead ? "3" : null,
+        bg: screen === k ? "#29C39F" : "transparent",
+        fg: screen === k ? "#06231D" : "#B9C5C0"
+      })),
+      week: [1, 1, 0, 1, 1, 1, 0].map((v, i) => ({ bg: v ? "#29C39F" : "#2C3A35", delay: (i * 0.06).toFixed(2) })),
+      bellOpen: s.bell, toggleBell: () => this.setState({ bell: !s.bell }),
+      goNotifs: this.go("notifs"),
+      notifs: [
+        { title: "Writing correction completed", time: "4 minutes ago", dot: "#29C39F" },
+        { title: "New recommendations available", time: "1 hour ago", dot: "#E0603B" },
+        { title: "Roadmap regenerated â€” week 3", time: "Yesterday", dot: "#0E6B5C" },
+        { title: "Placement test analyzed", time: "3 weeks ago", dot: "#CFC6B8" }
+      ],
+
+      isDash: screen === "dash", isTest: screen === "test", isRoadmap: screen === "roadmap",
+      isLessons: screen === "lessons", isLessonDetail: screen === "lessonDetail",
+      isExercise: screen === "exercise", isWriting: screen === "writing",
+      isSubs: screen === "subs", isProgress: screen === "progress",
+      isNotifs: screen === "notifs", isSettings: screen === "settings",
+      isAdminDash: screen === "adminDash", isAdminLessons: screen === "adminLessons",
+      isAdminExercises: screen === "adminExercises", isAdminStudents: screen === "adminStudents",
+      goWriting: this.go("writing"), goRoadmap: this.go("roadmap"), goLessons: this.go("lessons"),
+
+      stats: [
+        { label: "Lessons done", value: "14/32", note: "+3 this week", color: "#17211E", delay: "0.05" },
+        { label: "Avg writing", value: "78", note: "up from 64", color: "#0E6B5C", delay: "0.1" },
+        { label: "Exercises", value: "41", note: "88% accuracy", color: "#17211E", delay: "0.15" },
+        { label: "Grammar gain", value: "+18", note: "since placement", color: "#E0603B", delay: "0.2" }
+      ],
+      bars: [58, 64, 61, 70, 74, 71, 79, 82].map((v, i) => ({
+        v, label: "S" + (i + 1), h: Math.round(v * 1.35) + "px",
+        bg: i === 7 ? "#0E6B5C" : "#CDE7E0", delay: (0.15 + i * 0.07).toFixed(2)
+      })),
+      skills: [["Grammar", 78, "#0E6B5C"], ["Vocabulary", 71, "#29C39F"], ["Reading", 84, "#17211E"], ["Writing", 66, "#E0603B"]]
+        .map(([name, score, bg], i) => ({ name, score, bg, w: score + "%", delay: (0.2 + i * 0.09).toFixed(2) })),
+
+      qSkill: q.skill, qText: q.text, passage: q.passage || null,
+      partNum: q.part,
+      qInPart: this.questions.filter(x => x.part === q.part).indexOf(q) + 1,
+      qOfPart: this.questions.filter(x => x.part === q.part).length,
+      partCards: this.partMeta.map((p, i) => Object.assign({}, p, { delay: (0.1 + i * 0.07).toFixed(2) })),
+      parts: this.partMeta.map(p => {
+        const items = this.questions.filter(x => x.part === p.n);
+        const answered = items.filter(x => s.answers[this.questions.indexOf(x)] !== undefined).length;
+        const active = q.part === p.n, complete = answered === items.length;
+        return {
+          name: p.name,
+          meta: complete ? "done" : answered + "/" + items.length,
+          progress: (answered / items.length * 100) + "%",
+          bg: active ? "#17211E" : complete ? "#E3F2EE" : "#FFFDFA",
+          border: active ? "#17211E" : complete ? "#CDE7E0" : "#E5DDD2",
+          fg: active ? "#EFEAE2" : complete ? "#0A5347" : "#8A8378",
+          metaFg: active ? "#7E9089" : "#8A8378",
+          trackBg: active ? "#2C3A35" : "#ECE5DA",
+          barBg: active ? "#29C39F" : "#0E6B5C"
+        };
+      }),
+      isWritingPart: !!q.writing, isChoicePart: !q.writing,
+      testEssay: s.essay,
+      onEssay: (e) => this.setState({ essay: e.target.value }),
+      essayWords: s.essay.trim() ? s.essay.trim().split(/\\s+/).length : 0,
+      qOptions: (q.options || []).map((text, i) => {
+        const picked = s.answers[s.q] === i;
+        return {
+          text, key: "ABCD"[i],
+          pick: () => this.setState({
+            answers: Object.assign({}, s.answers, { [s.q]: i }),
+            q: Math.min(s.q + 1, this.questions.length - 1)
+          }),
+          border: picked ? "#0E6B5C" : "#E0D8CC",
+          bg: picked ? "#F1F8F5" : "#FFFEFC",
+          keyBg: picked ? "#CDE7E0" : "#F1ECE3",
+          keyFg: picked ? "#0A5347" : "#55605A"
+        };
+      }),
+      isLastQ: s.q === this.questions.length - 1,
+      notLastQ: s.q < this.questions.length - 1,
+      nextLabel: this.questions[s.q + 1] && this.questions[s.q + 1].part !== q.part ? "Next part â†’" : "Next question â†’",
+      nextQ: () => this.setState({ q: Math.min(s.q + 1, this.questions.length - 1) }),
+      prevQ: () => s.q === 0 ? this.setState({ testPhase: "intro" }) : this.setState({ q: s.q - 1 }),
+      testIntro: s.testPhase === "intro",
+      testIdle: s.testPhase === "idle", testAnalyzing: s.testPhase === "analyzing", testDone: s.testPhase === "done",
+      startTest: () => this.setState({ testPhase: "idle", q: 0 }),
+      submitTest: () => { this.setState({ testPhase: "analyzing" }); this.run(() => this.setState({ testPhase: "done" })); },
+      analyzeStep: this.steps[s.step],
+      perSkill: [["Grammar", 74, "#0E6B5C"], ["Vocabulary", 68, "#17211E"], ["Reading", 81, "#0E6B5C"], ["Writing", 62, "#E0603B"]]
+        .map(([name, score, color], i) => ({ name, score, color, delay: (0.1 + i * 0.07).toFixed(2) })),
+      strengths: ["Reading comprehension", "Past simple accuracy", "Core vocabulary range"].map((t, i) => ({ t, delay: (0.15 + i * 0.1).toFixed(2) })),
+      weaknesses: ["Perfect tenses", "Sentence linking", "Prepositions of time"].map((t, i) => ({ t, delay: (0.15 + i * 0.1).toFixed(2) })),
+
+      weeks: [
+        { n: 1, goal: "Stabilize past narration", status: "Done", progress: "100%", items: [["LESSON", "Past Simple review"], ["GRAMMAR", "Irregular verbs"], ["VOCAB", "Daily routines"], ["WRITE", "A day in my life"]] },
+        { n: 2, goal: "Move into present perfect", status: "Done", progress: "100%", items: [["LESSON", "Present Perfect basics"], ["GRAMMAR", "for / since"], ["VOCAB", "Life experience"], ["WRITE", "Something I have never done"]] },
+        { n: 3, goal: "Join ideas into longer sentences", status: "Active", progress: "70%", items: [["LESSON", "Connectors for longer sentences"], ["GRAMMAR", "although / whereas"], ["VOCAB", "Opinion phrases"], ["WRITE", "A day that changed my routine"]] },
+        { n: 4, goal: "Write a structured opinion piece", status: "Locked", progress: "0%", items: [["LESSON", "Paragraph shape"], ["GRAMMAR", "Conditionals I & II"], ["VOCAB", "Argument connectors"], ["WRITE", "Should school start later?"]] }
+      ].map((w, i) => {
+        const active = w.status === "Active", locked = w.status === "Locked";
+        return Object.assign({}, w, {
+          delay: (i * 0.09).toFixed(2),
+          items: w.items.map(([kind, label]) => ({ kind, label })),
+          bg: active ? "#17211E" : "#FFFDFA",
+          fg: active ? "#EFEAE2" : locked ? "#9A9284" : "#17211E",
+          border: active ? "#17211E" : "#E5DDD2",
+          tagBg: active ? "#29C39F" : locked ? "#F1ECE3" : "#E3F2EE",
+          tagFg: active ? "#06231D" : locked ? "#9A9284" : "#0A5347",
+          trackBg: active ? "#2C3A35" : "#ECE5DA",
+          barBg: active ? "#29C39F" : locked ? "#E0D8CC" : "#0E6B5C"
+        });
+      }),
+
+      filters: ["All", "Grammar", "Vocabulary", "Reading", "Writing"].map(label => ({
+        label, pick: () => this.setState({ filter: label }),
+        bg: s.filter === label ? "#17211E" : "#FFFDFA",
+        fg: s.filter === label ? "#EFEAE2" : "#55605A",
+        border: s.filter === label ? "#17211E" : "#E5DDD2"
+      })),
+      lessons: visible.map((l, i) => {
+        const done = !!s.done[l.id];
+        return Object.assign({}, l, {
+          delay: (i * 0.06).toFixed(2),
+          state: done ? "Completed" : "Not started",
+          stateFg: done ? "#0E6B5C" : "#8A8378",
+          btn: done ? "Review" : "Open lesson",
+          btnBg: done ? "#F1ECE3" : "#FFFDFA",
+          open: () => this.setState({ screen: "lessonDetail", lessonId: l.id })
+        });
+      }),
+
+      lesson,
+      lessonSections: [
+        { h: "Why connectors matter", p: "A B1 writer usually knows enough grammar to be correct, but writes in short, equal-length sentences. Connectors are what turn three correct sentences into one fluent idea.", example: "" },
+        { h: "Contrast: although / whereas", p: "â€œAlthoughâ€ opens a clause that runs against the main idea. â€œWhereasâ€ compares two facts side by side and is more common in formal writing.", example: "Although I was tired, I finished the report. â€” I prefer mornings, whereas my sister works at night." },
+        { h: "Condition: as long as / unless", p: "Both replace â€œifâ€ with a sharper edge: â€œas long asâ€ sets a requirement, â€œunlessâ€ marks the single exception.", example: "You can borrow it as long as you return it tonight. â€” I'll walk unless it rains." }
+      ].map((x, i) => Object.assign({}, x, { delay: (0.1 + i * 0.08).toFixed(2) })),
+      completeLabel: s.done[s.lessonId] ? "Completed âœ“" : "Mark as completed",
+      completeLesson: () => this.setState({ done: Object.assign({}, s.done, { [s.lessonId]: !s.done[s.lessonId] }) }),
+      goExercise: () => this.setState({ screen: "exercise", ex: 0, exScore: 0, exFb: null, exPhase: "run" }),
+      attached: [{ title: "Contrast connectors drill", n: "4 items" }, { title: "Gap-fill: although / but", n: "6 items" }, { title: "Rewrite two sentences as one", n: "5 items" }],
+
+      exRunning: s.exPhase === "run", exDone: s.exPhase === "done",
+      exNum: Math.min(s.ex + 1, 4), exScore: s.exScore, exProgress: (s.ex / 4 * 100) + "%",
+      exText: drill.text,
+      exOptions: drill.options.map((text, i) => {
+        const answered = s.exFb !== null;
+        const right = i === drill.answer;
+        return {
+          text,
+          bg: answered && right ? "#E3F2EE" : answered && s.exFb === i ? "#FBE7DF" : "#FFFEFC",
+          border: answered && right ? "#0E6B5C" : answered && s.exFb === i ? "#E0603B" : "#E0D8CC",
+          fg: "#17211E",
+          pick: () => {
+            if (answered) return;
+            const ok = right;
+            this.setState({ exFb: i, exScore: s.exScore + (ok ? 1 : 0) });
+            setTimeout(() => {
+              if (s.ex >= 3) this.setState({ exPhase: "done", exFb: null });
+              else this.setState({ ex: s.ex + 1, exFb: null });
+            }, 1400);
+          }
+        };
+      }),
+      exFeedback: s.exFb === null ? null : (s.exFb === drill.answer ? "Correct. " + drill.why : "Not quite. " + drill.why),
+      exFbBg: s.exFb === drill.answer ? "#E3F2EE" : "#FBE7DF",
+      exFbFg: s.exFb === drill.answer ? "#0A5347" : "#A73E1E",
+      exRestart: () => this.setState({ ex: 0, exScore: 0, exFb: null, exPhase: "run" }),
+
+      text: s.text,
+      onText: (e) => this.setState({ text: e.target.value }),
+      wordCount: s.text.trim() ? s.text.trim().split(/\\s+/).length : 0,
+      correctLabel: s.writing === "loading" ? "Correctingâ€¦" : "Send for AI correction",
+      correct: () => { if (s.writing === "loading") return; this.setState({ writing: "loading" }); this.run(() => this.setState({ writing: "done" })); },
+      failCorrect: () => { this.setState({ writing: "loading" }); this.run(() => this.setState({ writing: "failed" })); },
+      writingIdle: s.writing === "idle", writingLoading: s.writing === "loading",
+      writingDone: s.writing === "done", writingFailed: s.writing === "failed",
+      skeleton: ["92%", "78%", "85%", "60%", "70%"].map(w => ({ w })),
+      mistakes: [
+        { original: "I go", correction: "I went", rule: "Past Simple required after â€œyesterdayâ€.", delay: "0.1" },
+        { original: "we buy", correction: "we bought", rule: "Keep the tense consistent across the narrative.", delay: "0.16" }
+      ],
+      feedback: [
+        { label: "Grammar", text: "Two present-tense verbs inside a past narrative. The rest of the tense work is correct.", delay: "0.24" },
+        { label: "Vocabulary", text: "Good everyday range. â€œAll the weekendâ€ should be â€œall weekendâ€.", delay: "0.3" },
+        { label: "Fluency", text: "Sentences are short and evenly sized. Combine two of them with â€œbecauseâ€ or â€œwhileâ€.", delay: "0.36" }
+      ],
+      nextTopics: ["Past Simple", "Irregular verbs", "Time expressions"].map(t => ({ t })),
+
+      subs: [
+        { task: "A day that changed my routine", date: "Aug 3", score: "82", status: "Corrected", state: "ok" },
+        { task: "Something I have never done", date: "Jul 29", score: "79", status: "Corrected", state: "ok" },
+        { task: "My ideal working week", date: "Jul 26", score: "â€”", status: "Pending", state: "pending" },
+        { task: "A place I want to return to", date: "Jul 21", score: "â€”", status: "Failed", state: "failed" },
+        { task: "A day in my life", date: "Jul 16", score: "71", status: "Corrected", state: "ok" }
+      ].map((x, i) => Object.assign({}, x, {
+        delay: (i * 0.06).toFixed(2),
+        scoreFg: x.state === "ok" ? "#0E6B5C" : "#B5AC9D",
+        chipBg: x.state === "ok" ? "#E3F2EE" : x.state === "pending" ? "#F1ECE3" : "#FBE7DF",
+        chipFg: x.state === "ok" ? "#0A5347" : x.state === "pending" ? "#6C6A63" : "#A73E1E",
+        action: x.state === "ok" ? "View" : x.state === "failed" ? "Retry" : "Waiting",
+        open: this.go("writing")
+      })),
+
+      timeline: [
+        { date: "Aug 3", title: "Writing correction completed", detail: "Score 82 â€” best so far. Next topics: Past Simple, irregular verbs.", dot: "#29C39F" },
+        { date: "Aug 2", title: "Lesson completed", detail: "Connectors for longer sentences Â· Grammar Â· B1", dot: "#0E6B5C" },
+        { date: "Aug 1", title: "Recommendations refreshed", detail: "Engine re-ranked the catalog after three completed exercises.", dot: "#E0603B" },
+        { date: "Jul 28", title: "Roadmap week 3 unlocked", detail: "Goal: join ideas into longer sentences.", dot: "#0E6B5C" },
+        { date: "Jul 20", title: "Level re-estimated: A2 â†’ B1", detail: "Driven by grammar accuracy above 75% over five activities.", dot: "#17211E" },
+        { date: "Jul 12", title: "Placement test analyzed", detail: "A2+ with strong reading, weak perfect tenses.", dot: "#CFC6B8" }
+      ].map((t, i) => Object.assign({}, t, { delay: (i * 0.08).toFixed(2) })),
+
+      markAll: () => this.setState({ notifsRead: true }),
+      allNotifs: [
+        { title: "Writing correction completed", detail: "â€œA day that changed my routineâ€ scored 82. Two tense corrections.", time: "12:41", dot: "#29C39F", unread: true },
+        { title: "New recommendations available", detail: "Next lesson: Paragraph shape. Next grammar topic: conditionals.", time: "11:20", dot: "#E0603B", unread: true },
+        { title: "Roadmap regenerated", detail: "Week 3 rebuilt around sentence linking after your last submission.", time: "Yesterday", dot: "#0E6B5C", unread: true },
+        { title: "Inactivity reminder", detail: "Scheduled task: no activity for 3 days. Two 10-minute exercises suggested.", time: "Jul 30", dot: "#CFC6B8", unread: false },
+        { title: "Correction failed", detail: "AI provider returned 503. The submission stayed pending and can be retried.", time: "Jul 21", dot: "#CFC6B8", unread: false },
+        { title: "Placement test analyzed", detail: "Level B1. Strengths: reading. Weaknesses: perfect tenses.", time: "Jul 12", dot: "#CFC6B8", unread: false }
+      ].map((n, i) => ({
+        title: n.title, detail: n.detail, time: n.time, dot: n.dot,
+        delay: (i * 0.06).toFixed(2),
+        bg: n.unread && !s.notifsRead ? "#FFFDFA" : "#F8F5F0",
+        weight: n.unread && !s.notifsRead ? "600" : "400"
+      })),
+
+      profileFields: [
+        { label: "Full name", value: "Hassan" }, { label: "Email", value: "hassan@example.com" },
+        { label: "Weekly goal", value: "3â€“4 hours" }, { label: "Time zone", value: "Africa/Casablanca" }
+      ],
+      toggles: [
+        { key: "reminders", label: "Inactivity reminders", note: "Daily scheduled task emails you after 3 quiet days." },
+        { key: "digest", label: "Weekly progress digest", note: "A Monday summary of scores and next steps." },
+        { key: "sound", label: "Sound on correction ready", note: "Short chime when an AI job finishes." }
+      ].map(t => ({
+        label: t.label, note: t.note,
+        flip: () => this.setState({ prefs: Object.assign({}, s.prefs, { [t.key]: !s.prefs[t.key] }) }),
+        trackBg: s.prefs[t.key] ? "#0E6B5C" : "#DED6C9",
+        knob: s.prefs[t.key] ? "translateX(19px)" : "translateX(0)"
+      })),
+      retake: () => this.setState({ screen: "test", testPhase: "intro", q: 0, answers: {}, essay: "" }),
+
+      adminStats: [
+        { label: "Active students", value: "128", note: "+14 this month", color: "#17211E", delay: "0.05" },
+        { label: "Lessons published", value: "32", note: "4 archived", color: "#0E6B5C", delay: "0.1" },
+        { label: "AI jobs today", value: "412", note: "3 failed, retried", color: "#17211E", delay: "0.15" },
+        { label: "Avg completion", value: "68%", note: "roadmap week 3", color: "#E0603B", delay: "0.2" }
+      ],
+      jobs: [
+        { name: "EvaluatePlacementTest", state: "processed", time: "12:44", dot: "#29C39F" },
+        { name: "CorrectWritingSubmission", state: "processing", time: "12:41", dot: "#E0603B" },
+        { name: "RefreshRecommendations", state: "queued", time: "12:40", dot: "#CFC6B8" },
+        { name: "GenerateRoadmap", state: "processed", time: "12:12", dot: "#29C39F" },
+        { name: "CorrectWritingSubmission", state: "failed Â· retried", time: "11:58", dot: "#A73E1E" }
+      ],
+      topLessons: [
+        { title: "Present Perfect vs Past Simple", n: "96", w: "96%", delay: "0.25" },
+        { title: "Connectors for longer sentences", n: "81", w: "81%", delay: "0.32" },
+        { title: "Paragraph shape", n: "64", w: "64%", delay: "0.39" },
+        { title: "Everyday collocations", n: "52", w: "52%", delay: "0.46" }
+      ],
+      catalogCount: 32,
+      formOpen: s.formOpen, formCta: s.formOpen ? "Close form" : "+ New lesson",
+      toggleForm: () => this.setState({ formOpen: !s.formOpen }),
+      lessonForm: [
+        { label: "Title", placeholder: "e.g. Reported speech in the past" },
+        { label: "Skill", placeholder: "Grammar" }, { label: "Level", placeholder: "B1" }
+      ],
+      adminLessons: this.lessonData.map((l, i) => Object.assign({}, l, {
+        delay: (i * 0.05).toFixed(2), completions: [96, 81, 47, 64, 22, 52][i]
+      })),
+      adminExercises: [
+        { type: "Grammar", title: "Contrast connectors drill", lesson: "Connectors for longer sentences", items: 4 },
+        { type: "Vocabulary", title: "Collocations matching", lesson: "Everyday collocations", items: 12 },
+        { type: "Reading", title: "Main idea in 60 seconds", lesson: "Skimming for the main idea", items: 5 },
+        { type: "Grammar", title: "for / since gap-fill", lesson: "Present Perfect vs Past Simple", items: 8 }
+      ].map((e, i) => Object.assign({}, e, { delay: (i * 0.06).toFixed(2) })),
+      students: [
+        { name: "Hassan B.", level: "B1", roadmap: "Week 3 / 4", last: "today", spark: [4, 6, 3, 8, 7, 9, 5, 8, 9, 7] },
+        { name: "Amina K.", level: "A2", roadmap: "Week 2 / 4", last: "today", spark: [2, 3, 5, 4, 6, 3, 7, 5, 6, 8] },
+        { name: "Youssef R.", level: "B2", roadmap: "Week 4 / 4", last: "yesterday", spark: [7, 8, 6, 9, 5, 8, 9, 6, 7, 9] },
+        { name: "Salma T.", level: "A1", roadmap: "Week 1 / 4", last: "3 days ago", spark: [1, 2, 2, 3, 1, 4, 2, 3, 2, 1] },
+        { name: "Omar D.", level: "B1", roadmap: "Week 2 / 4", last: "5 days ago", spark: [5, 4, 6, 3, 2, 3, 1, 2, 1, 1] },
+        { name: "Nada F.", level: "C1", roadmap: "Completed", last: "today", spark: [8, 9, 7, 9, 8, 9, 9, 8, 9, 9] }
+      ].map((st, i) => Object.assign({}, st, {
+        delay: (i * 0.06).toFixed(2),
+        initial: st.name[0],
+        avBg: i % 3 === 0 ? "#E3F2EE" : i % 3 === 1 ? "#FBE7DF" : "#F1ECE3",
+        avFg: i % 3 === 0 ? "#0A5347" : i % 3 === 1 ? "#A73E1E" : "#55605A",
+        spark: st.spark.map(v => ({ h: (v * 2.6) + "px", bg: v > 6 ? "#0E6B5C" : v > 3 ? "#29C39F" : "#DED6C9" }))
+      }))
+    };
+  }
+}
+</script>
+
+
+</body></html>"
+  </script>
+</body>
+</html>

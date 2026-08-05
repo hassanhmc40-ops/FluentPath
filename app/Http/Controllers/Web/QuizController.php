@@ -8,10 +8,29 @@ use App\Http\Requests\SubmitQuizAttemptRequest;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class QuizController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $quizzes = Quiz::with('lesson')
+            ->withCount('quizQuestions')
+            ->orderBy('id')
+            ->get();
+
+        $lastAttempts = QuizAttempt::where('user_id', $request->user()->id)
+            ->orderByDesc('id')
+            ->get()
+            ->keyBy('quiz_id');
+
+        return view('quizzes.index', [
+            'quizzes' => $quizzes,
+            'lastAttempts' => $lastAttempts,
+        ]);
+    }
+
     public function show(Quiz $quiz): View
     {
         $this->authorize('view', $quiz);

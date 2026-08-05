@@ -68,4 +68,18 @@ class LessonFactory extends Factory
             ]),
         ]);
     }
+
+    public function reading(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'skill' => Skill::Reading,
+            'title' => fake()->randomElement([
+                'Skimming for the Main Idea',
+                'Scanning for Details',
+                'Understanding Context Clues',
+                'Reading Between the Lines',
+                'Summarizing a Short Text',
+            ]),
+        ]);
+    }
 }

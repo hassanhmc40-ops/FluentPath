@@ -47,6 +47,19 @@ class PlacementQuestionFactory extends Factory
         ]);
     }
 
+    public function reading(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'skill' => Skill::Reading,
+            'question' => fake()->randomElement([
+                'Read the short passage and choose the main idea.',
+                'Read the passage. What does the writer imply?',
+                'Read the text. Which statement is true?',
+                'Read the passage. What is the writer\u2019s purpose?',
+            ]),
+        ]);
+    }
+
     public function writing(): static
     {
         return $this->state(fn (array $attributes) => [

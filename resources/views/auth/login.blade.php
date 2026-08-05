@@ -1,44 +1,72 @@
 @extends('layouts.app')
 
-@section('title', 'Login')
+@section('title', 'Sign in')
+@section('crumb', 'Welcome')
 
 @section('content')
-<div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow">
-    <h1 class="text-2xl font-bold mb-6">Login</h1>
-
-    <form method="POST" action="/login">
-        @csrf
-
-        <div class="mb-4">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" name="email" id="email" value="{{ old('email') }}"
-                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border">
-            @error('email')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
+<div style="min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; background: #F6F2EC;">
+    <div style="background: #17211E; color: #EFEAE2; padding: 46px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+        <div style="position: absolute; width: 420px; height: 420px; border-radius: 50%; right: -140px; top: 40px; background: radial-gradient(circle, rgba(41,195,159,.32), transparent 68%); animation: drift 14s ease-in-out infinite;"></div>
+        <div style="position: absolute; width: 320px; height: 320px; border-radius: 50%; left: -90px; bottom: -60px; background: radial-gradient(circle, rgba(224,96,59,.22), transparent 68%); animation: drift 18s ease-in-out infinite reverse;"></div>
+        <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+            <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(140deg, #29C39F, #0E6B5C); display: grid; place-items: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; color: #06231D; font-size: 19px; animation: float 5s ease-in-out infinite;">E</div>
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px;">English Mentor AI</div>
         </div>
-
-        <div class="mb-4">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input type="password" name="password" id="password"
-                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border">
-            @error('password')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
+        <div style="position: relative; max-width: 460px;">
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 46px; font-weight: 800; letter-spacing: -1.6px; line-height: 1.08;">The coach that finds out what you actually know.</div>
+            <div style="font-size: 15px; line-height: 1.65; color: #A6B4AE; margin-top: 20px;">One holistic placement test. A four-week plan built from your result. Every piece of writing read and explained, not just scored.</div>
+            <div style="display: flex; gap: 26px; margin-top: 34px;">
+                <div>
+                    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; color: #29C39F;">A1–C1</div>
+                    <div style="font-size: 11.5px; color: #7E9089; margin-top: 2px;">levels covered</div>
+                </div>
+                <div>
+                    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; color: #29C39F;">4 weeks</div>
+                    <div style="font-size: 11.5px; color: #7E9089; margin-top: 2px;">per roadmap cycle</div>
+                </div>
+                <div>
+                    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; color: #29C39F;">0 blocking</div>
+                    <div style="font-size: 11.5px; color: #7E9089; margin-top: 2px;">AI calls, all queued</div>
+                </div>
+            </div>
         </div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7E9089; position: relative;">Simplon Maghreb × JobinTech · SRS v3.0</div>
+    </div>
 
-        <div class="mb-4 flex items-center">
-            <input type="checkbox" name="remember" id="remember" class="rounded border-gray-300">
-            <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
+    <div style="display: grid; place-items: center; padding: 46px;">
+        <div style="width: 100%; max-width: 384px; animation: rise .5s both cubic-bezier(.2,.9,.2,1);">
+            <div style="display: flex; gap: 4px; background: #EDE7DE; border-radius: 999px; padding: 4px; margin-bottom: 28px;">
+                <a href="/login" style="flex: 1; text-align: center; border: 0; border-radius: 999px; padding: 10px; font: inherit; font-size: 13px; font-weight: 500; transition: all .24s; background: #FFFDFA; color: #17211E;">Sign in</a>
+                <a href="/register" style="flex: 1; text-align: center; border: 0; border-radius: 999px; padding: 10px; font: inherit; font-size: 13px; font-weight: 500; transition: all .24s; background: transparent; color: #8A8378;">Create account</a>
+            </div>
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 27px; font-weight: 700; letter-spacing: -.7px;">Welcome back</div>
+            <div style="font-size: 13.5px; color: #8A8378; margin-top: 6px;">Pick up where you left off.</div>
+
+            <form method="POST" action="/login" style="display: flex; flex-direction: column; gap: 14px; margin-top: 26px;">
+                @csrf
+                <label style="display: block;">
+                    <span style="display: block; font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; color: #8A8378; margin-bottom: 7px;">Email</span>
+                    <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="you@example.com" style="width: 100%; border: 1px solid #E0D8CC; border-radius: 12px; padding: 13px 15px; font-size: 14.5px; background: #FFFDFA; color: #17211E; outline: none; transition: border-color .2s, box-shadow .2s;">
+                </label>
+                <label style="display: block;">
+                    <span style="display: block; font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; color: #8A8378; margin-bottom: 7px;">Password</span>
+                    <input type="password" name="password" required placeholder="••••••••" style="width: 100%; border: 1px solid #E0D8CC; border-radius: 12px; padding: 13px 15px; font-size: 14.5px; background: #FFFDFA; color: #17211E; outline: none; transition: border-color .2s, box-shadow .2s;">
+                </label>
+
+                <button type="submit" style="width: 100%; margin-top: 10px; border: 0; border-radius: 12px; padding: 15px; background: #17211E; color: #EFEAE2; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .2s, background .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#0E6B5C'" onmouseout="this.style.transform='none';this.style.background='#17211E'">Sign in →</button>
+            </form>
+
+            <div style="display: flex; align-items: center; gap: 12px; margin: 22px 0; color: #B5AC9D; font-size: 11.5px;">
+                <div style="flex: 1; height: 1px; background: #E0D8CC;"></div>
+                <span>OR CONTINUE AS</span>
+                <div style="flex: 1; height: 1px; background: #E0D8CC;"></div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/login" style="flex: 1; text-align: center; border: 1px solid #E0D8CC; border-radius: 12px; padding: 12px; background: #FFFDFA; font: inherit; font-size: 13px; transition: all .2s;" onmouseover="this.style.borderColor='#0E6B5C';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0D8CC';this.style.transform='none'">Student demo</a>
+                <a href="/login" style="flex: 1; text-align: center; border: 1px solid #E0D8CC; border-radius: 12px; padding: 12px; background: #FFFDFA; font: inherit; font-size: 13px; transition: all .2s;" onmouseover="this.style.borderColor='#0E6B5C';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0D8CC';this.style.transform='none'">Admin demo</a>
+            </div>
+            <div style="font-size: 12px; color: #A09889; margin-top: 22px; line-height: 1.55;">Sanctum token auth. Passwords hashed; every AI call runs on a queue.</div>
         </div>
-
-        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">
-            Login
-        </button>
-    </form>
-
-    <p class="mt-4 text-sm text-center">
-        Don't have an account? <a href="/register" class="text-indigo-600 hover:underline">Register</a>
-    </p>
+    </div>
 </div>
 @endsection

@@ -19,6 +19,15 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
+    public function markAllRead(Request $request): RedirectResponse
+    {
+        Notification::where('user_id', $request->user()->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return back()->with('success', 'All notifications marked as read.');
+    }
+
     public function markAsRead(Notification $notification): RedirectResponse
     {
         $this->authorize('update', $notification);

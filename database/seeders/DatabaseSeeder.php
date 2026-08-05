@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         $students = User::factory(5)->create();
 
-        $placementQuestions = PlacementQuestion::factory(12)
+        $placementQuestions = PlacementQuestion::factory(16)
             ->sequence(
                 ['skill' => 'grammar', 'level' => 'A1'],
                 ['skill' => 'grammar', 'level' => 'A2'],
@@ -39,6 +39,10 @@ class DatabaseSeeder extends Seeder
                 ['skill' => 'vocabulary', 'level' => 'A2'],
                 ['skill' => 'vocabulary', 'level' => 'B1'],
                 ['skill' => 'vocabulary', 'level' => 'B2'],
+                ['skill' => 'reading', 'level' => 'A1'],
+                ['skill' => 'reading', 'level' => 'A2'],
+                ['skill' => 'reading', 'level' => 'B1'],
+                ['skill' => 'reading', 'level' => 'B2'],
                 ['skill' => 'writing', 'level' => 'A1'],
                 ['skill' => 'writing', 'level' => 'A2'],
                 ['skill' => 'writing', 'level' => 'B1'],
@@ -46,7 +50,7 @@ class DatabaseSeeder extends Seeder
             )
             ->create();
 
-        $lessons = Lesson::factory(15)
+        $lessons = Lesson::factory(20)
             ->sequence(
                 ['skill' => 'grammar', 'level' => 'A1'],
                 ['skill' => 'grammar', 'level' => 'A2'],
@@ -58,6 +62,11 @@ class DatabaseSeeder extends Seeder
                 ['skill' => 'vocabulary', 'level' => 'B1'],
                 ['skill' => 'vocabulary', 'level' => 'B2'],
                 ['skill' => 'vocabulary', 'level' => 'B2'],
+                ['skill' => 'reading', 'level' => 'A1'],
+                ['skill' => 'reading', 'level' => 'A2'],
+                ['skill' => 'reading', 'level' => 'B1'],
+                ['skill' => 'reading', 'level' => 'B2'],
+                ['skill' => 'reading', 'level' => 'B2'],
                 ['skill' => 'writing', 'level' => 'A1'],
                 ['skill' => 'writing', 'level' => 'A2'],
                 ['skill' => 'writing', 'level' => 'B1'],
