@@ -1,0 +1,132 @@
+/* ============================================================
+   FluentPath — design system extracted from
+   docs/English Mentor AI.html (exact match)
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #F6F2EC;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  color: #17211E;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: #0E6B5C; text-decoration: none; }
+a:hover { color: #E0603B; }
+::selection { background: #CDE7E0; }
+input, textarea, select, button { font-family: inherit; }
+
+/* ---------- keyframes (verbatim from design) ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideL { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes slideR { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.35); opacity: .35; } }
+@keyframes dash { from { stroke-dashoffset: 700; } to { stroke-dashoffset: 0; } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .15; } }
+@keyframes drift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(24px,-30px) scale(1.12); } 100% { transform: translate(0,0) scale(1); } }
+
+/* ---------- shared components ---------- */
+.fp-font-head { font-family: 'Bricolage Grotesque', sans-serif; }
+.fp-font-mono { font-family: 'IBM Plex Mono', monospace; }
+
+.fp-card {
+  background: #FFFDFA;
+  border: 1px solid #E5DDD2;
+  border-radius: 18px;
+}
+
+.fp-card-cream {
+  background: #FFFEFC;
+  border: 1px solid #E5DDD2;
+  border-radius: 16px;
+}
+
+.fp-btn-dark {
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 26px;
+  background: #17211E;
+  color: #EFEAE2;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .2s, background .2s;
+}
+.fp-btn-dark:hover { transform: translateY(-2px); background: #0E6B5C; }
+
+.fp-btn-accent {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  background: #29C39F;
+  color: #06231D;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+.fp-btn-accent:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(41,195,159,.3); }
+
+.fp-btn-outline {
+  border: 1px solid #17211E;
+  border-radius: 999px;
+  padding: 13px 24px;
+  background: transparent;
+  color: #17211E;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.fp-btn-outline:hover { background: #17211E; color: #EFEAE2; }
+
+.fp-input {
+  width: 100%;
+  border: 1px solid #E0D8CC;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #FFFDFA;
+  color: #17211E;
+  font-size: 14.5px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.fp-input:focus { border-color: #0E6B5C; box-shadow: 0 0 0 4px rgba(14,107,92,.1); }
+
+.fp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.fp-chip-ok { background: #E3F2EE; color: #0A5347; }
+.fp-chip-pending { background: #F1ECE3; color: #6C6A63; }
+.fp-chip-failed { background: #FBE7DF; color: #A73E1E; }
+
+.fp-skeleton {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #EDE7DC 25%, #F7F3EC 50%, #EDE7DC 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.fp-crumb {
+  font-size: 10.5px;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+  color: #8A8378;
+}

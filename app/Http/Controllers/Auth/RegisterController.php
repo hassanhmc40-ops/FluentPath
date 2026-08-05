@@ -28,6 +28,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect()->intended('/dashboard');
+        return redirect()->intended('/onboarding');
     }
 }

@@ -24,6 +24,18 @@ class LessonController extends Controller
         return view('lessons.index', compact('lessons', 'completedLessonIds'));
     }
 
+    public function show(Request $request, Lesson $lesson): View
+    {
+        $completed = LessonProgress::completedFor($request->user()->id)
+            ->where('lesson_id', $lesson->id)
+            ->exists();
+
+        return view('lessons.show', [
+            'lesson' => $lesson->load('quizzes'),
+            'completed' => $completed,
+        ]);
+    }
+
     public function complete(Request $request, Lesson $lesson): RedirectResponse
     {
         $this->authorize('create', LessonProgress::class);
