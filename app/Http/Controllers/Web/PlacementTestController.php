@@ -45,6 +45,19 @@ class PlacementTestController extends Controller
 
         EvaluatePlacementTest::dispatch($placementTest);
 
-        return redirect('/placement-test')->with('success', 'Placement test submitted. Evaluation started — this page will refresh automatically.');
+        return redirect('/placement-test')->with('success', 'Placement test submitted. Evaluation started �?" this page will refresh automatically.');
+    }
+
+    public function retake(Request $request): RedirectResponse
+    {
+        $test = PlacementTest::where('user_id', $request->user()->id)
+            ->latest('id')
+            ->first();
+
+        if ($test && $test->status === PlacementTestStatus::Analyzed) {
+            $test->delete(); // cascades placement answers + linked roadmaps
+        }
+
+        return redirect('/placement-test');
     }
 }

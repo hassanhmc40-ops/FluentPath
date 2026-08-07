@@ -15,13 +15,19 @@ class LessonController extends Controller
 {
     public function index(Request $request): View
     {
-        $lessons = Lesson::with('quizzes')->get();
+        $level = $request->user()->currentLevel();
 
-        $completedLessonIds = LessonProgress::completedFor($request->user()->id)
-            ->pluck('lesson_id')
-            ->all();
+        $lessons = $level
+            ? Lesson::with('quizzes')->where('level', $level->value)->get()
+            : collect();
 
-        return view('lessons.index', compact('lessons', 'completedLessonIds'));
+        $completedLessonIds = $level
+            ? LessonProgress::completedFor($request->user()->id)
+                ->pluck('lesson_id')
+                ->all()
+            : [];
+
+        return view('lessons.index', compact('lessons', 'completedLessonIds', 'level'));
     }
 
     public function show(Request $request, Lesson $lesson): View

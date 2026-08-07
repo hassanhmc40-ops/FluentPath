@@ -36,6 +36,7 @@ class PlacementTestFactory extends Factory
             'cefr_level' => fake()->randomElement(CefrLevel::cases()),
             'grammar_score' => fake()->randomFloat(2, 40, 100),
             'vocabulary_score' => fake()->randomFloat(2, 40, 100),
+            'reading_score' => fake()->randomFloat(2, 40, 100),
             'writing_score' => fake()->randomFloat(2, 40, 100),
             'strengths' => [fake()->sentence(3), fake()->sentence(3)],
             'weaknesses' => [fake()->sentence(3), fake()->sentence(3)],

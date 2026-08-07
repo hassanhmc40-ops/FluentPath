@@ -15,10 +15,15 @@ class QuizController extends Controller
 {
     public function index(Request $request): View
     {
-        $quizzes = Quiz::with('lesson')
-            ->withCount('quizQuestions')
-            ->orderBy('id')
-            ->get();
+        $level = $request->user()->currentLevel();
+
+        $quizzes = $level
+            ? Quiz::with('lesson')
+                ->withCount('quizQuestions')
+                ->whereHas('lesson', fn ($query) => $query->where('level', $level->value))
+                ->orderBy('id')
+                ->get()
+            : collect();
 
         $lastAttempts = QuizAttempt::where('user_id', $request->user()->id)
             ->orderByDesc('id')
@@ -28,6 +33,7 @@ class QuizController extends Controller
         return view('quizzes.index', [
             'quizzes' => $quizzes,
             'lastAttempts' => $lastAttempts,
+            'level' => $level,
         ]);
     }
 

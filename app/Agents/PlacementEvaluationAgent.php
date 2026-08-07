@@ -13,8 +13,6 @@ class PlacementEvaluationAgent extends AnonymousAgent implements HasStructuredOu
     {
         return [
             'cefr_level' => $schema->string()->enum(array_column(CefrLevel::cases(), 'value')),
-            'grammar_score' => $schema->number(),
-            'vocabulary_score' => $schema->number(),
             'writing_score' => $schema->number(),
             'strengths' => $schema->array()->items($schema->string()),
             'weaknesses' => $schema->array()->items($schema->string()),

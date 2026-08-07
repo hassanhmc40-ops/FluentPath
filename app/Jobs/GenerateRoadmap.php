@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class GenerateRoadmap implements ShouldQueue
@@ -30,7 +31,7 @@ class GenerateRoadmap implements ShouldQueue
 
         $placementTest = $this->roadmap->placementTest;
 
-        $lessons = Lesson::select('id', 'title', 'skill', 'level')->get();
+        $lessons = $this->lessonsForLevel($placementTest->cefr_level?->value);
 
         $prompt = "You are an expert English teacher creating a personalized 4-week learning roadmap.
 
@@ -44,6 +45,8 @@ Placement Test Results:
 
 Available Lessons (id, title, skill, level):
 '.$lessons->map(fn ($l) => "- {$l->id}: {$l->title} ({$l->skill?->value}, {$l->level?->value})")->implode("\n")."
+
+The learner should primarily work with lessons at or near their CEFR level ({$placementTest->cefr_level?->value}); the lessons listed above have already been filtered to their level plus one level above and one level below.
 
 Create a 4-week roadmap. For each week provide an objective and a list of lesson_ids from the available lessons above that best address the learner's weaknesses while building on their strengths. Order lessons within each week by recommended sequence.";
 
@@ -120,6 +123,34 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
 
             $this->roadmap->update(['status' => RoadmapStatus::Failed]);
         }
+    }
+
+    protected function lessonsForLevel(?string $level): Collection
+    {
+        $query = Lesson::select('id', 'title', 'skill', 'level');
+
+        $lessons = $query->get();
+
+        if ($level === null) {
+            return $lessons;
+        }
+
+        $levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+        $index = array_search($level, $levels, true);
+
+        if ($index === false) {
+            return $lessons;
+        }
+
+        $minimum = $levels[max(0, $index - 1)];
+        $maximum = $levels[min(count($levels) - 1, $index + 1)];
+
+        // Level-biased catalog: the learner's level plus one above and one below.
+        // Fall back to the full catalog when the filter would leave nothing
+        // for the agent to choose from.
+        $biased = (clone $query)->whereBetween('level', [$minimum, $maximum])->get();
+
+        return $biased->isNotEmpty() ? $biased : $lessons;
     }
 
     protected function isValidResponse(mixed $data): bool

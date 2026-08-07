@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\RoadmapStatus;
+use App\Jobs\EvaluatePlacementTest;
 use App\Models\Lesson;
 use App\Models\PlacementQuestion;
 use App\Models\PlacementTest;
@@ -40,7 +41,8 @@ describe('student pages', function () {
 
         $this->get('/placement-test')
             ->assertStatus(200)
-            ->assertSee('Submit placement test');
+            ->assertSee('Submit placement test')
+            ->assertSee('type="radio"', false);
     });
 
     it('submits the placement test and dispatches evaluation', function () {
@@ -51,7 +53,7 @@ describe('student pages', function () {
         $this->post('/placement-test', [
             'answers' => $questions->map(fn ($q, $i) => [
                 'placement_question_id' => $q->id,
-                'answer' => "Answer {$i}.",
+                'answer' => $q->correct_answer ?? "Answer {$i}.",
             ])->values()->all(),
         ])->assertRedirect('/placement-test');
 
@@ -59,8 +61,79 @@ describe('student pages', function () {
         $this->assertDatabaseCount('placement_answers', 2);
         $this->assertDatabaseHas('placement_answers', [
             'placement_question_id' => $questions->first()->id,
-            'answer' => 'Answer 0.',
+            'answer' => $questions->first()->correct_answer ?? 'Answer 0.',
         ]);
+    });
+
+    it('renders the skip buttons and live counter on the placement form', function () {
+        PlacementQuestion::factory()->count(3)->create();
+
+        $this->get('/placement-test')
+            ->assertStatus(200)
+            ->assertSee('data-skip=', false)
+            ->assertSee('fp-answered-count', false)
+            ->assertSee('fp-total-count', false)
+            ->assertSee("you can skip questions you don't know", false)
+            ->assertSee('Submit placement test');
+    });
+
+    it('stores only answered questions when the submission includes skipped entries', function () {
+        Queue::fake();
+
+        $questions = PlacementQuestion::factory()->count(2)->create();
+        $q1 = $questions[0];
+        $q2 = $questions[1];
+
+        $this->post('/placement-test', [
+            'answers' => [
+                [
+                    'placement_question_id' => $q1->id,
+                    'answer' => $q1->correct_answer ?? 'Answer 0.',
+                ],
+                [
+                    'placement_question_id' => $q2->id,
+                    'answer' => '',
+                ],
+            ],
+        ])->assertRedirect('/placement-test');
+
+        $this->assertDatabaseCount('placement_tests', 1);
+        $this->assertDatabaseCount('placement_answers', 1);
+        $this->assertDatabaseHas('placement_answers', [
+            'placement_question_id' => $q1->id,
+        ]);
+
+        Queue::assertPushed(EvaluatePlacementTest::class);
+    });
+
+    it('retakes the placement test: deletes the old test and roadmap and shows the form again', function () {
+        $test = PlacementTest::factory()->analyzed()->create(['user_id' => $this->user->id]);
+        Roadmap::factory()->create([
+            'user_id' => $this->user->id,
+            'placement_test_id' => $test->id,
+        ]);
+
+        $this->get('/placement-test')->assertSee('View my roadmap');
+
+        $this->post('/placement-test/retake')
+            ->assertRedirect('/placement-test');
+
+        $this->assertDatabaseCount('placement_tests', 0);
+        $this->assertDatabaseCount('roadmaps', 0);
+
+        $this->get('/placement-test')
+            ->assertStatus(200)
+            ->assertSee('Submit placement test')
+            ->assertDontSee('View my roadmap');
+    });
+
+    it('retaking is a no-op when the student has no analyzed test', function () {
+        $this->post('/placement-test/retake')->assertRedirect('/placement-test');
+        $this->assertDatabaseCount('placement_tests', 0);
+    });
+
+    it('rejects GET requests to the retake endpoint', function () {
+        $this->get('/placement-test/retake')->assertStatus(405);
     });
 
     it('submits a writing piece and dispatches correction', function () {
@@ -195,7 +268,7 @@ describe('admin pages', function () {
         $this->get('/admin/quizzes/create')->assertStatus(200);
         $this->get('/admin/quiz-questions')->assertStatus(200);
         $this->get('/admin/quiz-questions/create')->assertStatus(200);
-        $this->get('/admin/placement-questions')->assertStatus(200);
+        $this->get('/admin/placement-questions')->assertStatus(200)->assertSee('Placement test');
         $this->get('/admin/placement-questions/create')->assertStatus(200);
     });
 
@@ -207,6 +280,7 @@ describe('admin pages', function () {
             'title' => 'Past Simple',
             'skill' => 'grammar',
             'level' => 'A2',
+            'content' => "## What you'll learn\nThe past simple describes finished actions.\n\n## How it works\n- Regular verbs end in -ed.\n> He walked to work.",
         ])->assertRedirect(route('admin.lessons.index'));
 
         $lesson = Lesson::where('title', 'Past Simple')->first();
@@ -216,6 +290,7 @@ describe('admin pages', function () {
             'title' => 'Past Simple Verbs',
             'skill' => 'grammar',
             'level' => 'A2',
+            'content' => "## What you'll learn\nThe past simple describes finished actions.",
         ])->assertRedirect(route('admin.lessons.index'));
 
         $this->assertDatabaseHas('lessons', ['id' => $lesson->id, 'title' => 'Past Simple Verbs']);

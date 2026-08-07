@@ -45,6 +45,10 @@
                     </select>
                 </label>
             </div>
+            <label style="display: block; margin-top: 14px;">
+                <span style="display: block; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #7E9089; margin-bottom: 7px;">Lesson content</span>
+                <textarea name="content" rows="9" required placeholder="Write the full lesson explanation. Use ## for section headings, - for bullets, and > for example sentences." style="width: 100%; border: 1px solid #2C3A35; border-radius: 11px; padding: 12px 14px; font-size: 14px; background: #202D29; color: #EFEAE2; outline: none; resize: vertical; line-height: 1.6;" onfocus="this.style.borderColor='#29C39F'" onblur="this.style.borderColor='#2C3A35'">{{ old('content') }}</textarea>
+            </label>
             <div style="display: flex; gap: 10px; margin-top: 18px;">
                 <button type="submit" style="border: 0; border-radius: 999px; padding: 12px 22px; background: #29C39F; color: #06231D; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .2s, box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 26px rgba(41,195,159,.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">Publish lesson</button>
                 <button type="button" id="fp-cancel-form" style="border: 1px solid #2C3A35; border-radius: 999px; padding: 12px 22px; background: none; color: #A6B4AE; font: inherit; font-size: 13px; cursor: pointer; transition: border-color .2s;" onmouseover="this.style.borderColor='#A6B4AE'" onmouseout="this.style.borderColor='#2C3A35'">Cancel</button>

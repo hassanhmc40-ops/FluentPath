@@ -65,17 +65,22 @@
         </div>
     </div>
 
+    @if (!$user->isAdmin())
     <div style="background: #FFF6F2; border: 1px solid #F0C9B9; border-radius: 20px; padding: 24px; animation: rise .5s .16s both;">
         <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700; color: #A73E1E;">Danger zone</div>
         <div style="font-size: 13px; color: #7A5A4C; margin-top: 6px; line-height: 1.55;">Retaking the placement test archives your current roadmap and regenerates a new 4-week plan.</div>
         <div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
-            <a href="/placement-test" style="border: 1px solid #E0603B; background: none; color: #A73E1E; border-radius: 999px; padding: 11px 20px; font: inherit; font-size: 12.5px; text-decoration: none; transition: all .2s;" onmouseover="this.style.background='#E0603B';this.style.color='#FFF6F2'" onmouseout="this.style.background='none';this.style.color='#A73E1E'">Retake placement test</a>
+            <form method="POST" action="/placement-test/retake">
+                @csrf
+                <button type="submit" style="border: 1px solid #E0603B; background: none; color: #A73E1E; border-radius: 999px; padding: 11px 20px; font: inherit; font-size: 12.5px; cursor: pointer; transition: all .2s;" onmouseover="this.style.background='#E0603B';this.style.color='#FFF6F2'" onmouseout="this.style.background='none';this.style.color='#A73E1E'">Retake placement test</button>
+            </form>
             <form method="POST" action="/logout">
                 @csrf
                 <button type="submit" style="border: 1px solid #E0D8CC; background: none; color: #8A8378; border-radius: 999px; padding: 11px 20px; font: inherit; font-size: 12.5px; cursor: pointer; transition: all .2s;" onmouseover="this.style.borderColor='#A73E1E';this.style.color='#A73E1E'" onmouseout="this.style.borderColor='#E0D8CC';this.style.color='#8A8378'">Log out</button>
             </form>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 

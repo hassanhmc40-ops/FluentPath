@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['user_id', 'submitted_at', 'status', 'cefr_level', 'grammar_score', 'vocabulary_score', 'writing_score', 'strengths', 'weaknesses', 'reasoning'])]
+#[Fillable(['user_id', 'submitted_at', 'status', 'cefr_level', 'grammar_score', 'vocabulary_score', 'reading_score', 'writing_score', 'strengths', 'weaknesses', 'reasoning'])]
 class PlacementTest extends Model
 {
     /** @use HasFactory<PlacementTestFactory> */
@@ -27,6 +27,7 @@ class PlacementTest extends Model
             'cefr_level' => CefrLevel::class,
             'grammar_score' => 'decimal:2',
             'vocabulary_score' => 'decimal:2',
+            'reading_score' => 'decimal:2',
             'writing_score' => 'decimal:2',
             'strengths' => 'array',
             'weaknesses' => 'array',

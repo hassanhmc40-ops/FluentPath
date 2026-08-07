@@ -5,7 +5,22 @@
 @section('crumb', 'Practice')
 
 @section('content')
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; animation: fadein .4s both;">
+<div style="animation: fadein .4s both;">
+
+    @if ($level === null)
+        <div style="background: #FFFDFA; border: 1px dashed #CFC6B8; border-radius: 20px; padding: 64px 40px; text-align: center; animation: rise .5s both;">
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.4px; color: #17211E;">Complete your placement test first</div>
+            <div style="font-size: 14px; color: #6C6A63; margin-top: 12px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.7;">Your exercises are personalised to your level. Take the placement test so we can show you the exercises and quizzes that match your English level.</div>
+            <a href="/placement-test" style="display: inline-block; margin-top: 26px; border: 0; border-radius: 999px; padding: 14px 28px; background: #17211E; color: #EFEAE2; font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: transform .2s, background .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#0E6B5C'" onmouseout="this.style.transform='none';this.style.background='#17211E'">Take the placement test →</a>
+        </div>
+    @else
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .6px; padding: 8px 14px; border-radius: 999px; background: #17211E; color: #29C39F;">{{ $level->value }} level</span>
+        <span style="font-size: 12.5px; color: #8A8378;">{{ $quizzes->count() }} {{ Str::plural('exercise', $quizzes->count()) }} matched to your level</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px;">
     @forelse ($quizzes as $quiz)
         @php
             $skill = $quiz->lesson?->skill->value ?? 'grammar';
@@ -33,5 +48,7 @@
             Exercises will appear here as the catalog grows. Start with a lesson to unlock its drills.
         </div>
     @endforelse
+    </div>
+    @endif
 </div>
 @endsection

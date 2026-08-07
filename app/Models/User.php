@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\CefrLevel;
+use App\Enums\PlacementTestStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -31,6 +33,20 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * The student's current CEFR level, taken from the latest analyzed
+     * placement test. Returns null when the student has not completed
+     * (or has not had analyzed) a placement test yet.
+     */
+    public function currentLevel(): ?CefrLevel
+    {
+        return $this->placementTests()
+            ->where('status', PlacementTestStatus::Analyzed)
+            ->latest('id')
+            ->first()
+            ?->cefr_level;
     }
 
     public function placementTests(): HasMany

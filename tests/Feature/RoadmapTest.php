@@ -29,9 +29,15 @@ function validRoadmapResponse(array $lessonIds): array
     ];
 }
 
-function seedAnalyzedTest(int $userId): PlacementTest
+function seedAnalyzedTest(int $userId, ?string $level = null): PlacementTest
 {
-    return PlacementTest::factory()->analyzed()->create(['user_id' => $userId]);
+    $attributes = ['user_id' => $userId];
+
+    if ($level !== null) {
+        $attributes['cefr_level'] = $level;
+    }
+
+    return PlacementTest::factory()->analyzed()->create($attributes);
 }
 
 describe('generation', function () {
@@ -189,14 +195,16 @@ describe('generation job', function () {
 
     it('sends the available lessons to the agent in the prompt', function () {
         $user = User::factory()->create();
-        $placementTest = seedAnalyzedTest($user->id);
+        // Level-coherent setup: the placement test is B1 and every lesson is
+        // B1, so the level-bias filter keeps the whole catalog in the prompt.
+        $placementTest = seedAnalyzedTest($user->id, 'B1');
 
         $roadmap = Roadmap::factory()->create([
             'user_id' => $user->id,
             'placement_test_id' => $placementTest->id,
         ]);
 
-        $lessons = Lesson::factory()->count(6)->create();
+        $lessons = Lesson::factory()->count(6)->create(['level' => 'B1']);
 
         AI::fakeAgent(RoadmapGenerationAgent::class, [validRoadmapResponse($lessons->pluck('id')->all())]);
 
