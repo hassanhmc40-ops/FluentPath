@@ -22,7 +22,11 @@ use App\Http\Controllers\Web\WritingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return auth()->check() ? redirect('/dashboard') : redirect('/login');
+    if (! auth()->check()) {
+        return redirect('/login');
+    }
+
+    return auth()->user()->isAdmin() ? redirect('/admin') : redirect('/dashboard');
 });
 
 Route::middleware('guest')->group(function () {

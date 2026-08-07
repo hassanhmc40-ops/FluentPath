@@ -38,7 +38,7 @@ describe('track daily activity', function () {
     it('does not record a row for admins', function () {
         $this->actingAs(User::factory()->admin()->create());
 
-        $this->get('/dashboard')->assertStatus(200);
+        $this->get('/dashboard')->assertRedirect('/admin');
 
         $this->assertDatabaseCount('user_daily_activity', 0);
     });

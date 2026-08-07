@@ -246,6 +246,42 @@ describe('student pages', function () {
     });
 });
 
+describe('role-based landing pages', function () {
+    it('sends admins straight to the overview after login', function () {
+        $admin = User::factory()->admin()->create();
+
+        $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ])->assertRedirect('/admin');
+    });
+
+    it('sends admins to the overview from the app root', function () {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get('/')->assertRedirect('/admin');
+    });
+
+    it('still sends students to their dashboard after login', function () {
+        $student = User::factory()->create();
+
+        $this->post('/login', [
+            'email' => $student->email,
+            'password' => 'password',
+        ])->assertRedirect('/dashboard');
+    });
+
+    it('renders the dashboard without admin leftovers for students', function () {
+        $student = User::factory()->create();
+        $this->actingAs($student);
+
+        $this->get('/dashboard')
+            ->assertStatus(200)
+            ->assertDontSee('Admin Console')
+            ->assertDontSee('Switch to admin view');
+    });
+});
+
 describe('admin pages', function () {
     it('forbids students from admin pages', function () {
         $student = User::factory()->create();
@@ -261,7 +297,7 @@ describe('admin pages', function () {
         $admin = User::factory()->admin()->create();
         $this->actingAs($admin);
 
-        $this->get('/dashboard')->assertStatus(200);
+        $this->get('/dashboard')->assertRedirect('/admin');
         $this->get('/admin/lessons')->assertStatus(200);
         $this->get('/admin/lessons/create')->assertStatus(200);
         $this->get('/admin/quizzes')->assertStatus(200);

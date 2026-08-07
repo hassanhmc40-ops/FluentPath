@@ -23,6 +23,6 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
-        return redirect()->intended('/dashboard');
+        return redirect()->intended($request->user()->isAdmin() ? '/admin' : '/dashboard');
     }
 }

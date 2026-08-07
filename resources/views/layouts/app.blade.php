@@ -161,7 +161,6 @@
                         </div>
                     </div>
                 @endif
-                <a href="{{ $user->isAdmin() ? '/dashboard' : '/admin' }}" style="border: 1px solid #2C3A35; background: #202D29; color: #A6B4AE; border-radius: 10px; padding: 9px; font: inherit; font-size: 11.5px; text-align: center; transition: all .2s;" onmouseover="this.style.color='#EFEAE2';this.style.borderColor='#29C39F'" onmouseout="this.style.color='#A6B4AE';this.style.borderColor='#2C3A35'">Switch to {{ $user->isAdmin() ? 'student' : 'admin' }} view</a>
                 <div style="display: flex; align-items: center; gap: 10px; padding: 2px;">
                     <div style="width: 30px; height: 30px; border-radius: 50%; background: #E0603B; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #FFF6F2;">{{ $userInitial }}</div>
                     <div style="line-height: 1.3; flex: 1;">

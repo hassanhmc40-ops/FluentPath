@@ -6,15 +6,6 @@
 @section('content')
 <div style="display: flex; flex-direction: column; gap: 20px; animation: fadein .4s both;">
 
-    @if ($data === null)
-        {{-- Admin placeholder --}}
-        <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 22px; padding: 50px 40px; text-align: center; animation: rise .5s both;">
-            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -.4px;">Admin Console</div>
-            <div style="font-size: 14px; color: #6C6A63; margin-top: 8px; line-height: 1.6;">Use the sidebar to navigate to Lessons, Exercises, Students, or Overview.</div>
-            <a href="/admin" style="display: inline-block; margin-top: 20px; border: 0; border-radius: 999px; padding: 12px 24px; background: #17211E; color: #EFEAE2; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: transform .2s, background .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#0E6B5C'" onmouseout="this.style.transform='none';this.style.background='#17211E'">Go to Overview</a>
-        </div>
-
-    @else
         {{-- Student dashboard --}}
         @php
             $level = $data['cefr_level'] ? $data['cefr_level']->value : null;
@@ -198,7 +189,5 @@
                 @endif
             </div>
         @endif
-
-    @endif
 </div>
 @endsection
