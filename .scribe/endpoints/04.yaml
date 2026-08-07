@@ -1,0 +1,184 @@
+name: Quizzes
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/quizzes/{quiz_id}'
+    metadata:
+      custom: []
+      groupName: Quizzes
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Retrieve a quiz with its questions.'
+      description: 'Questions do not expose the correct answer.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      quiz_id:
+        custom: []
+        name: quiz_id
+        description: 'The ID of the quiz.'
+        required: true
+        example: 311
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      quiz:
+        custom: []
+        name: quiz
+        description: 'The quiz id.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      quiz_id: 311
+      quiz: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":371,"lesson_id":392,"title":"Quick Check: Present Simple","description":"Nostrum qui commodi incidunt iure.","created_at":"2026-08-07T17:40:38.000000Z"}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/quizzes/{quiz_id}/attempts'
+    metadata:
+      custom: []
+      groupName: Quizzes
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Submit a quiz attempt.'
+      description: |-
+        Scores the selected options against the quiz questions and stores the
+        attempt. Multiple attempts are allowed.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      quiz_id:
+        custom: []
+        name: quiz_id
+        description: 'The ID of the quiz.'
+        required: true
+        example: 311
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      quiz:
+        custom: []
+        name: quiz
+        description: 'The quiz id.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      quiz_id: 311
+      quiz: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      answers:
+        custom: []
+        name: answers
+        description: 'List of answers.'
+        required: true
+        example:
+          -
+            quiz_question_id: 1
+            selected_option: b
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      'answers[].quiz_question_id':
+        custom: []
+        name: 'answers[].quiz_question_id'
+        description: 'The quiz question id.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'answers[].selected_option':
+        custom: []
+        name: 'answers[].selected_option'
+        description: 'The selected option: a, b, c or d.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      answers:
+        -
+          quiz_question_id: 1
+          selected_option: b
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "id": 1,
+            "quiz_id": 1,
+            "score": 80,
+            "completed_at": "2026-08-07T10:00:00.000000Z",
+            "answers": [
+              {"quiz_question_id": 1, "selected_option": "b", "is_correct": true}
+            ]
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

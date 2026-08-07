@@ -17,6 +17,21 @@ use Illuminate\Validation\Rule;
 
 class LessonController extends Controller
 {
+    /**
+     * List lessons.
+     *
+     * Optionally filtered by skill (`grammar`, `vocabulary`, `reading`,
+     * `writing`) and/or CEFR level (`A1`–`C1`).
+     *
+     * @group Lessons
+     *
+     * @queryParam skill string Filter by skill. Example: grammar
+     * @queryParam level string Filter by CEFR level. Example: B1
+     *
+     * @apiResource App\Http\Resources\LessonResource
+     *
+     * @apiResourceModel App\Models\Lesson
+     */
     public function index(Request $request): AnonymousResourceCollection
     {
         $request->validate([
@@ -37,6 +52,20 @@ class LessonController extends Controller
         return LessonResource::collection($query->get());
     }
 
+    /**
+     * Mark a lesson as completed.
+     *
+     * Creates or updates the lesson progress row and fires the
+     * recommendation-refresh pipeline.
+     *
+     * @group Lessons
+     *
+     * @urlParam lesson integer required The lesson id. Example: 1
+     *
+     * @apiResource App\Http\Resources\LessonProgressResource
+     *
+     * @apiResourceModel App\Models\LessonProgress
+     */
     public function complete(Request $request, Lesson $lesson): LessonProgressResource
     {
         $this->authorize('create', LessonProgress::class);

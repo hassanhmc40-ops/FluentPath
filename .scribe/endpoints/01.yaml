@@ -1,0 +1,174 @@
+name: 'Placement Test'
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/placement-tests
+    metadata:
+      custom: []
+      groupName: 'Placement Test'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Submit the placement test.'
+      description: |-
+        Stores the answers and dispatches the AI evaluation job. Responds
+        immediately with `202` — poll `GET /api/placement-tests/{test}` until
+        the status becomes analyzed.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      answers:
+        custom: []
+        name: answers
+        description: 'List of answered placement questions.'
+        required: true
+        example:
+          -
+            placement_question_id: 1
+            answer: b
+          -
+            placement_question_id: 2
+            answer: x
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      'answers[].placement_question_id':
+        custom: []
+        name: 'answers[].placement_question_id'
+        description: 'The placement question id.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'answers[].answer':
+        custom: []
+        name: 'answers[].answer'
+        description: "The learner's answer (free text)."
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      answers:
+        -
+          placement_question_id: 1
+          answer: b
+        -
+          placement_question_id: 2
+          answer: x
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 202
+        content: |-
+          {
+            "id": 1,
+            "status": "pending"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "message": "Answer at least one question.",
+            "errors": {"answers": ["Answer at least one question."]}
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/placement-tests/{placement_test_id}'
+    metadata:
+      custom: []
+      groupName: 'Placement Test'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Retrieve a placement test result.'
+      description: |-
+        Includes the AI evaluation (CEFR level, per-skill scores, strengths,
+        weaknesses and reasoning) once the asynchronous job has finished.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      placement_test_id:
+        custom: []
+        name: placement_test_id
+        description: 'The ID of the placement test.'
+        required: true
+        example: 40
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      placement_test:
+        custom: []
+        name: placement_test
+        description: 'The placement test id.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      placement_test_id: 40
+      placement_test: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":45,"status":"pending","submitted_at":"2026-08-07T17:40:37.000000Z","cefr_level":null,"grammar_score":null,"vocabulary_score":null,"reading_score":null,"writing_score":null,"strengths":null,"weaknesses":null,"reasoning":null,"created_at":"2026-08-07T17:40:38.000000Z"}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

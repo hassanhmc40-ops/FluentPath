@@ -12,6 +12,19 @@ use Illuminate\Http\JsonResponse;
 
 class QuizController extends Controller
 {
+    /**
+     * Retrieve a quiz with its questions.
+     *
+     * Questions do not expose the correct answer.
+     *
+     * @group Quizzes
+     *
+     * @urlParam quiz integer required The quiz id. Example: 1
+     *
+     * @apiResource App\Http\Resources\StudentQuizResource
+     *
+     * @apiResourceModel App\Models\Quiz
+     */
     public function show(Quiz $quiz): StudentQuizResource
     {
         $this->authorize('view', $quiz);
@@ -19,6 +32,30 @@ class QuizController extends Controller
         return new StudentQuizResource($quiz->load('quizQuestions'));
     }
 
+    /**
+     * Submit a quiz attempt.
+     *
+     * Scores the selected options against the quiz questions and stores the
+     * attempt. Multiple attempts are allowed.
+     *
+     * @group Quizzes
+     *
+     * @urlParam quiz integer required The quiz id. Example: 1
+     *
+     * @bodyParam answers array required List of answers. Example: [{"quiz_question_id":1,"selected_option":"b"}]
+     * @bodyParam answers[].quiz_question_id integer required The quiz question id.
+     * @bodyParam answers[].selected_option string required The selected option: a, b, c or d.
+     *
+     * @response status=201 {
+     *   "id": 1,
+     *   "quiz_id": 1,
+     *   "score": 80,
+     *   "completed_at": "2026-08-07T10:00:00.000000Z",
+     *   "answers": [
+     *     {"quiz_question_id": 1, "selected_option": "b", "is_correct": true}
+     *   ]
+     * }
+     */
     public function attempt(SubmitQuizAttemptRequest $request, Quiz $quiz): JsonResponse
     {
         $this->authorize('create', QuizAttempt::class);

@@ -1,0 +1,112 @@
+name: Roadmaps
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/roadmaps
+    metadata:
+      custom: []
+      groupName: Roadmaps
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Generate a personalized 4-week roadmap.'
+      description: |-
+        Requires a fully analyzed placement test. Dispatches the roadmap
+        generation job and returns `202` immediately.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 202
+        content: |-
+          {
+            "id": 1,
+            "status": "pending"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "message": "Placement test must be analyzed before generating a roadmap."
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/roadmaps
+    metadata:
+      custom: []
+      groupName: Roadmaps
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Retrieve the current roadmap.'
+      description: |-
+        Returns the latest roadmap for the authenticated student, including
+        its 4 weeks and the lessons assigned to each week. The AI only selects
+        lessons that already exist in the catalog.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":37,"title":"Your 4-Week English Boost","status":"pending","generated_at":"2026-08-07T17:40:38.000000Z","created_at":"2026-08-07T17:40:38.000000Z"}}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "message": "No roadmap found."
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

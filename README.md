@@ -1,58 +1,189 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# English Mentor AI — FluentPath
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+An AI-powered English learning coach for self-taught learners targeting CEFR A1 to C1. It diagnoses a learner's real level with a holistic placement test, builds a personalized 4-week roadmap from an existing lesson catalog, corrects free-form writing with explained AI feedback, and adapts continuously as the learner progresses.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## The Learning Loop
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+The app follows an **adaptive learning loop**, not a linear pipeline:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. **Register** — create a student account.
+2. **Placement Test** — answer Grammar, Vocabulary, Reading, and Writing questions in one submission.
+3. **AI Evaluation** — the AI holistically assesses the submission, returning a CEFR level with per-skill scores, strengths, weaknesses, and reasoning.
+4. **Personalized Roadmap** — the AI generates a 4-week plan using only existing catalog content.
+5. **Lessons & Quizzes** — follow the roadmap: read lessons, take quizzes.
+6. **Writing Practice** — submit free-form writing.
+7. **AI Feedback** — the AI corrects the text with structured, explained feedback (grammar, vocabulary, fluency, specific mistakes).
+8. **Dashboard & Recommendations** — progress updates, learning streak, and refreshed recommendations after every activity.
 
-## Learning Laravel
+Then **loop back** into lessons, quizzes, and writing. Every completed activity feeds back into the recommendation engine, keeping the roadmap aligned with the learner's ongoing progress.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Core Features
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- **Holistic AI Placement Test** — Grammar, Vocabulary, Reading, and Writing questions evaluated jointly (not scored independently).
+- **AI-Generated 4-Week Roadmap** — personalized plan; the AI only selects *existing* catalog content, never invents new material.
+- **Admin-Managed Catalog** — 60 lessons and 60 quizzes covering CEFR A1 through C1, authored and maintained by administrators.
+- **Writing Correction** — free-form submissions corrected asynchronously with structured feedback: corrected text, per-skill comments, individual mistake analysis, and next-topic recommendations.
+- **Recommendation Engine** — refreshes the next lesson, grammar topic, vocabulary topic, and writing exercise after every activity.
+- **Progress Dashboard** — CEFR level, completed lessons vs. total, writing score trend, learning streak, and next recommended action.
+- **In-App Notifications** — alerts when AI results are ready (placement test analyzed, roadmap generated, writing corrected).
+- **Async AI via Jobs & Queues** — every AI call runs on a Laravel Job; the user gets a 202 Accepted immediately, never a blocking request.
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## AI & Asynchrony
+
+Every AI-powered feature (placement evaluation, roadmap generation, writing correction) follows the same pattern:
+
+- A **Laravel Job** is dispatched to the **database queue driver**.
+- The user receives an immediate **202 Accepted** response — the UI is never blocked.
+- The job calls the **Groq** provider via `laravel/ai`.
+- The response is validated against a **strict JSON schema**; invalid responses are rejected and logged.
+- Results are stored through Eloquent JSON casts and the user is notified.
+- AI-triggering routes are **rate-limited** (`throttle:ai` middleware).
+- In tests, the queue is always faked with `Queue::fake()` — real API calls are never made.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Laravel 13 (`^13.8`) |
+| Language | PHP 8.3 |
+| Database | MySQL 8 (local dev via XAMPP) |
+| Auth | Laravel Sanctum 4 |
+| AI Provider | Groq (via `laravel/ai`) |
+| Queue Driver | Database |
+| Testing | Pest 4 (`^4.7`) |
+| Code Style | Laravel Pint (`^1.29`) |
+| Frontend | Blade templates, custom CSS |
+| Design Font | Bricolage Grotesque (Google Fonts) |
+
+---
+
+## Roles
+
+| Role | Description |
+|---|---|
+| **Student** | Registers, takes placement test, follows roadmap, completes lessons/quizzes, submits writing, tracks progress. |
+| **Admin** | Creates and manages the full content catalog (lessons, quizzes, placement questions), monitors platform usage. Admins never manually edit student roadmaps. |
+
+---
+
+## Local Setup (Windows / XAMPP)
+
+### Prerequisites
+
+- PHP 8.3+ (XAMPP)
+- MySQL 8 (XAMPP)
+- Composer
+- Node.js & npm
+
+### Steps
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone the repository
+git clone <repo-url> FluentPath
+cd FluentPath
 
-php artisan boost:install
+# 2. Install PHP dependencies
+composer install
+
+# 3. Create environment file and application key
+copy .env.example .env
+php artisan key:generate
+
+# 4. Create the MySQL database
+#    Open phpMyAdmin or mysql CLI and run:
+#    CREATE DATABASE fluentpath;
+
+# 5. Configure .env for MySQL and queue
+#    Set these values in your .env:
+#    DB_CONNECTION=mysql
+#    DB_HOST=127.0.0.1
+#    DB_PORT=3306
+#    DB_DATABASE=fluentpath
+#    DB_USERNAME=root
+#    DB_PASSWORD=
+#    QUEUE_CONNECTION=database
+
+# 6. Run migrations and seed the database
+#    Seeds 60 lessons, 60 quizzes, 300 quiz questions,
+#    100 placement questions, and 6 demo accounts.
+php artisan migrate --seed
+
+# 7. Start the development server
+php artisan serve
+
+# 8. Start the queue worker (required for AI features)
+php artisan queue:work
+
+# 9. (Optional) Start the task scheduler
+#     For daily maintenance tasks (recommendation refresh, inactivity reminders):
+php artisan schedule:work
+#     Or add a cron job: * * * * * php artisan schedule:run
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Demo Accounts
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+All accounts use the password `password`.
 
-## Code of Conduct
+| Role | Name | Email | Level |
+|---|---|---|---|
+| Admin | Admin | `admin@fluentpath.com` | — |
+| Student | Sara Benali | `sara@fluentpath.com` | A1 |
+| Student | Yassine El Amrani | `yassine@fluentpath.com` | A2 |
+| Student | Lina Haddad | `lina@fluentpath.com` | B1 |
+| Student | Omar Tazi | `omar@fluentpath.com` | B2 |
+| Student | Nadia Berrada | `nadia@fluentpath.com` | C1 |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Each demo student is pre-seeded with a completed placement test, a generated roadmap, quiz attempts, writing submissions, and notifications so you can explore the dashboard immediately.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Running Tests & Formatting
 
-## License
+```bash
+# Run the test suite (uses SQLite in-memory)
+vendor\bin\pest
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Check code formatting
+vendor\bin\pint
+```
+
+---
+
+## API Documentation
+
+An API is available alongside the web interface (auth via Laravel Sanctum tokens). Interactive documentation is generated with [Scribe](https://scribe.knuckles.wtf) (already installed as a dev dependency):
+
+```bash
+php artisan scribe:generate
+```
+
+The docs are served by the app itself:
+
+- **Web UI** — `http://localhost:8000/docs`
+- **Postman collection** — `http://localhost:8000/docs.postman`
+- **OpenAPI spec** — `http://localhost:8000/docs.openapi`
+
+Every endpoint is annotated in the API controllers (`app/Http/Controllers/Api/`) and documented with example requests, `@bodyParam`/`@queryParam`/`@urlParam` definitions, and sample responses. Most endpoints require a Sanctum bearer token (`Authorization: Bearer <token>`), obtained from `POST /api/register` or `POST /api/login`.
+
+---
+
+## Documentation & Deliverables
+
+| Document | Path | Description |
+|---|---|---|
+| Full Spec (SRS v3.0) | [`AGENT.md`](AGENT.md) | Complete software requirements specification, MCD/MLD, business rules, and deliverables. |
+| Project Context | [`Projectcontext.md`](Projectcontext.md) | Exhaustive reference: architecture, data model, decisions, and feature details. |
+| MCD Diagram | [`docs/MCD.png`](docs/MCD.png) | Conceptual data model. |
+| MLD Diagram | [`docs/MLD.png`](docs/MLD.png) | Logical data model. |
+| System Architecture | [`docs/SystemArchitecture.png`](docs/SystemArchitecture.png) | High-level architecture diagram. |
+| Design Mockup | [`docs/English Mentor AI.html`](docs/English%20Mentor%20AI.html) | Interactive UI design reference (dark green sidebar, cream content area, Bricolage Grotesque). |

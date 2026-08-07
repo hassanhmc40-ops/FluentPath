@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -15,13 +16,16 @@ class SubmitQuizAttemptRequest extends FormRequest
 
     public function rules(): array
     {
+        $quiz = $this->route('quiz');
+        $quizId = $quiz instanceof Quiz ? $quiz->id : $quiz;
+
         return [
             'answers' => ['required', 'array', 'min:1', 'max:100'],
             'answers.*.quiz_question_id' => [
                 'required',
                 'integer',
                 'distinct',
-                Rule::exists('quiz_questions', 'id')->where('quiz_id', $this->route('quiz')->id),
+                Rule::exists('quiz_questions', 'id')->where('quiz_id', $quizId),
             ],
             'answers.*.selected_option' => ['required', 'string', Rule::in(['a', 'b', 'c', 'd'])],
         ];
