@@ -114,7 +114,11 @@ describe('admin lessons', function () {
 
         $this->deleteJson("/api/admin/lessons/{$lesson->id}")->assertStatus(204);
 
-        $this->assertDatabaseMissing('lessons', ['id' => $lesson->id]);
+        $this->assertSoftDeleted('lessons', ['id' => $lesson->id]);
+
+        $this->getJson('/api/admin/lessons')
+            ->assertStatus(200)
+            ->assertJsonCount(0, 'data');
     });
 });
 

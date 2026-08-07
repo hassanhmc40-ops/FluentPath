@@ -297,7 +297,11 @@ describe('admin pages', function () {
 
         $this->delete("/admin/lessons/{$lesson->id}")->assertRedirect(route('admin.lessons.index'));
 
-        $this->assertDatabaseCount('lessons', 0);
+        $this->assertSoftDeleted('lessons', ['id' => $lesson->id]);
+
+        $this->get(route('admin.lessons.index', ['trashed' => 1]))
+            ->assertStatus(200)
+            ->assertSee('Past Simple Verbs');
     });
 
     it('supports creating a quiz question from the web', function () {

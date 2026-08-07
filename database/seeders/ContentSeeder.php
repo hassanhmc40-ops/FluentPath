@@ -39,7 +39,7 @@ class ContentSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
 
         PlacementQuestion::query()->delete();
-        Lesson::query()->delete();
+        Lesson::withTrashed()->forceDelete();
         Quiz::query()->delete();
         QuizQuestion::query()->delete();
 
