@@ -1,0 +1,151 @@
+name: 'Writing Submissions'
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/writing-submissions
+    metadata:
+      custom: []
+      groupName: 'Writing Submissions'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Submit a piece of writing for AI correction.'
+      description: |-
+        Dispatches the correction job and returns `202` immediately. The full
+        correction (corrected text, score, mistakes, next topics) arrives
+        asynchronously — poll the submission endpoint until status is
+        `corrected`.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      prompt:
+        custom: []
+        name: prompt
+        description: 'The writing prompt being answered.'
+        required: true
+        example: 'Write a short paragraph introducing yourself.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      original_text:
+        custom: []
+        name: original_text
+        description: "The student's text, at least 10 characters."
+        required: true
+        example: 'Hello, my name is Sara and I live in Casablanca.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      prompt: 'Write a short paragraph introducing yourself.'
+      original_text: 'Hello, my name is Sara and I live in Casablanca.'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 202
+        content: |-
+          {
+            "id": 1,
+            "status": "pending"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "message": "The original text must be at least 10 characters.",
+            "errors": {"original_text": ["The original text must be at least 10 characters."]}
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/writing-submissions/{writing_submission_id}'
+    metadata:
+      custom: []
+      groupName: 'Writing Submissions'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Retrieve a writing submission and its AI correction.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      writing_submission_id:
+        custom: []
+        name: writing_submission_id
+        description: 'The ID of the writing submission.'
+        required: true
+        example: 56
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      writing_submission:
+        custom: []
+        name: writing_submission
+        description: 'The submission id.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      writing_submission_id: 56
+      writing_submission: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":66,"user_id":57,"prompt":"Describe your daily routine.","original_text":"Nostrum qui commodi incidunt iure. Et et modi ipsum nostrum. Autem et consequatur aut dolores enim non facere tempora. Voluptatem laboriosam praesentium quis adipisci.","corrected_text":null,"score":null,"grammar_feedback":null,"vocabulary_feedback":null,"fluency_feedback":null,"mistakes":null,"recommendations":null,"next_topics":null,"status":"pending","submitted_at":"2026-08-07T17:40:38.000000Z","created_at":"2026-08-07T17:40:38.000000Z","updated_at":"2026-08-07T17:40:38.000000Z"}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
