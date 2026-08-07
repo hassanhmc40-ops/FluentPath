@@ -70,6 +70,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [OverviewController::class, 'index'])->name('overview');
     Route::get('/students', [StudentController::class, 'index'])->name('students');
     Route::resource('lessons', AdminLessonController::class)->except('show');
+    Route::patch('lessons/{lesson}/restore', [AdminLessonController::class, 'restore'])->name('lessons.restore');
     Route::resource('quizzes', AdminQuizController::class)->except('show');
     Route::resource('quiz-questions', QuizQuestionController::class)->except('show');
     Route::resource('placement-questions', PlacementQuestionController::class)->except('show');

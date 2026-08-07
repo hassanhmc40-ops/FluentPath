@@ -29,6 +29,10 @@ class RecommendationService
             $weekLessons = $week->roadmapWeekLessons->sortBy('display_order');
 
             foreach ($weekLessons as $wl) {
+                if (! $wl->lesson) {
+                    continue;
+                }
+
                 if (! in_array($wl->lesson_id, $completedLessonIds, true)) {
                     $nextLesson = $wl->lesson;
                     $nextTopic = $wl->lesson?->skill?->value;

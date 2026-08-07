@@ -51,7 +51,7 @@ class DashboardService
             ->count();
 
         $totalLessons = $cefrLevel
-            ? DB::table('lessons')->where('level', $cefrLevel->value)->count()
+            ? DB::table('lessons')->where('level', $cefrLevel->value)->whereNull('deleted_at')->count()
             : 0;
 
         $writingHistory = WritingSubmission::where('user_id', $userId)
@@ -87,7 +87,7 @@ class DashboardService
             ];
 
             if ($latestRoadmap->next_lesson_id) {
-                $nextLesson = DB::table('lessons')->find($latestRoadmap->next_lesson_id);
+                $nextLesson = DB::table('lessons')->whereNull('deleted_at')->find($latestRoadmap->next_lesson_id);
                 $nextAction['lesson_title'] = $nextLesson?->title;
             } else {
                 $nextAction['lesson_title'] = null;
