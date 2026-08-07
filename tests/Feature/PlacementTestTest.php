@@ -19,8 +19,6 @@ function validPlacementAnalysis(): array
 {
     return [
         'cefr_level' => 'B1',
-        'grammar_score' => 78,
-        'vocabulary_score' => 65.5,
         'writing_score' => 70,
         'strengths' => ['Good grasp of tenses', 'Clear writing'],
         'weaknesses' => ['Phrasal verbs', 'Idioms'],
@@ -33,6 +31,7 @@ function seedPlacementTestWithAnswers(int $userId): PlacementTest
     $questions = [
         PlacementQuestion::factory()->grammar()->create(),
         PlacementQuestion::factory()->vocabulary()->create(),
+        PlacementQuestion::factory()->reading()->create(),
         PlacementQuestion::factory()->writing()->create(),
     ];
 
@@ -41,7 +40,7 @@ function seedPlacementTestWithAnswers(int $userId): PlacementTest
     $test->placementAnswers()->createMany(
         collect($questions)->map(fn (PlacementQuestion $q) => [
             'placement_question_id' => $q->id,
-            'answer' => 'Student answer.',
+            'answer' => $q->correct_answer ?? 'Student writing sample.',
         ])->all()
     );
 
@@ -58,12 +57,13 @@ describe('submission', function () {
         $questions = collect([
             PlacementQuestion::factory()->grammar()->create(),
             PlacementQuestion::factory()->vocabulary()->create(),
+            PlacementQuestion::factory()->writing()->create(),
         ]);
 
         $response = $this->postJson('/api/placement-tests', [
             'answers' => $questions->map(fn ($q) => [
                 'placement_question_id' => $q->id,
-                'answer' => 'My answer here.',
+                'answer' => $q->correct_answer ?? 'My writing sample.',
             ])->all(),
         ]);
 
@@ -79,9 +79,68 @@ describe('submission', function () {
             'status' => 'pending',
         ]);
 
-        $this->assertDatabaseCount('placement_answers', 2);
+        $this->assertDatabaseCount('placement_answers', 3);
 
         Queue::assertPushed(EvaluatePlacementTest::class, fn (EvaluatePlacementTest $job) => $job->placementTest->id === $id);
+    });
+
+    it('rejects a free-text answer for a multiple choice question with 422', function () {
+        Queue::fake();
+
+        Sanctum::actingAs(User::factory()->create());
+
+        $question = PlacementQuestion::factory()->grammar()->create();
+
+        $this->postJson('/api/placement-tests', [
+            'answers' => [
+                ['placement_question_id' => $question->id, 'answer' => 'She is a teacher.'],
+            ],
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors('answers.0.answer');
+
+        $this->assertDatabaseCount('placement_tests', 0);
+
+        Queue::assertNotPushed(EvaluatePlacementTest::class);
+    });
+
+    it('rejects an answer letter outside a-d for a multiple choice question with 422', function () {
+        Queue::fake();
+
+        Sanctum::actingAs(User::factory()->create());
+
+        $question = PlacementQuestion::factory()->vocabulary()->create();
+
+        $this->postJson('/api/placement-tests', [
+            'answers' => [
+                ['placement_question_id' => $question->id, 'answer' => 'e'],
+            ],
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors('answers.0.answer');
+
+        Queue::assertNotPushed(EvaluatePlacementTest::class);
+    });
+
+    it('accepts a full 100-question submission (cap raised to 150)', function () {
+        Queue::fake();
+
+        Sanctum::actingAs(User::factory()->create());
+
+        $questions = collect()
+            ->merge(PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(25)->writing()->create());
+
+        $this->postJson('/api/placement-tests', [
+            'answers' => $questions->map(fn ($q) => [
+                'placement_question_id' => $q->id,
+                'answer' => $q->correct_answer ?? 'A writing sample of sufficient length.',
+            ])->all(),
+        ])->assertStatus(202);
+
+        $this->assertDatabaseCount('placement_answers', 100);
+
+        Queue::assertPushed(EvaluatePlacementTest::class);
     });
 
     it('rejects a submission referencing a non-existent question with 422 and does not dispatch a job', function () {
@@ -131,6 +190,67 @@ describe('submission', function () {
         Queue::assertNotPushed(EvaluatePlacementTest::class);
     });
 
+    it('accepts a partial submission and stores only the answered questions', function () {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
+        $vocabularyQuestions = PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
+        $readingQuestions = PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
+        $writingQuestions = PlacementQuestion::factory()->count(25)->writing()->create();
+
+        $answers = collect()
+            ->push([
+                'placement_question_id' => $grammarQuestions->first()->id,
+                'answer' => $grammarQuestions->first()->correct_answer,
+            ])
+            ->push([
+                'placement_question_id' => $grammarQuestions->skip(1)->first()->id,
+                'answer' => 'a',
+            ])
+            ->push([
+                'placement_question_id' => $writingQuestions->first()->id,
+                'answer' => 'My writing sample about a topic.',
+            ])
+            ->all();
+
+        $response = $this->postJson('/api/placement-tests', ['answers' => $answers]);
+
+        $response->assertStatus(202)
+            ->assertJsonStructure(['id', 'status'])
+            ->assertJsonPath('status', 'pending');
+
+        $this->assertDatabaseCount('placement_answers', 3);
+
+        Queue::assertPushed(EvaluatePlacementTest::class);
+    });
+
+    it('rejects a submission where every question was skipped with 422', function () {
+        Queue::fake();
+
+        Sanctum::actingAs(User::factory()->create());
+
+        $q1 = PlacementQuestion::factory()->grammar()->create();
+        $q2 = PlacementQuestion::factory()->vocabulary()->create();
+
+        $response = $this->postJson('/api/placement-tests', [
+            'answers' => [
+                ['placement_question_id' => $q1->id, 'answer' => ''],
+                ['placement_question_id' => $q2->id, 'answer' => '   '],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('answers')
+            ->assertJsonPath('errors.answers.0', 'Answer at least one question to submit the placement test.');
+
+        $this->assertDatabaseCount('placement_tests', 0);
+
+        Queue::assertNotPushed(EvaluatePlacementTest::class);
+    });
+
     it('requires authentication', function () {
         $this->postJson('/api/placement-tests', [
             'answers' => [['placement_question_id' => 1, 'answer' => 'X.']],
@@ -148,11 +268,11 @@ describe('show', function () {
         $this->getJson("/api/placement-tests/{$test->id}")
             ->assertStatus(200)
             ->assertJsonPath('data.id', $test->id)
-            ->assertJsonCount(3, 'data.answers')
+            ->assertJsonCount(4, 'data.answers')
             ->assertJsonStructure([
                 'data' => [
                     'id', 'status', 'submitted_at', 'cefr_level', 'grammar_score',
-                    'vocabulary_score', 'writing_score', 'strengths', 'weaknesses',
+                    'vocabulary_score', 'reading_score', 'writing_score', 'strengths', 'weaknesses',
                     'reasoning', 'answers' => [
                         '*' => ['id', 'placement_question_id', 'answer', 'score'],
                     ],
@@ -179,7 +299,7 @@ describe('show', function () {
 });
 
 describe('evaluation job', function () {
-    it('marks the test as analyzed and persists the AI evaluation', function () {
+    it('marks the test as analyzed, auto-scores the MCQ skills and persists the AI writing score', function () {
         $user = User::factory()->create();
         $test = seedPlacementTestWithAnswers($user->id);
 
@@ -191,8 +311,9 @@ describe('evaluation job', function () {
 
         expect($test->status)->toBe(PlacementTestStatus::Analyzed)
             ->and($test->cefr_level)->toBe(CefrLevel::B1)
-            ->and($test->grammar_score)->toBe('78.00')
-            ->and($test->vocabulary_score)->toBe('65.50')
+            ->and($test->grammar_score)->toBe('100.00')
+            ->and($test->vocabulary_score)->toBe('100.00')
+            ->and($test->reading_score)->toBe('100.00')
             ->and($test->writing_score)->toBe('70.00')
             ->and($test->strengths)->toBe(['Good grasp of tenses', 'Clear writing'])
             ->and($test->weaknesses)->toBe(['Phrasal verbs', 'Idioms'])
@@ -204,7 +325,36 @@ describe('evaluation job', function () {
         ]);
     });
 
-    it('sends the per-skill answers to the agent in the prompt', function () {
+    it('scores a mixed MCQ submission by correct answers only', function () {
+        $user = User::factory()->create();
+
+        $questions = [
+            PlacementQuestion::factory()->grammar()->create(),
+            PlacementQuestion::factory()->vocabulary()->create(),
+            PlacementQuestion::factory()->reading()->create(),
+        ];
+
+        $test = PlacementTest::factory()->create(['user_id' => $user->id]);
+
+        $test->placementAnswers()->createMany(
+            collect($questions)->map(fn (PlacementQuestion $q, int $i) => [
+                'placement_question_id' => $q->id,
+                'answer' => $i === 0 ? 'z' : $q->correct_answer,
+            ])->all()
+        );
+
+        AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        (new EvaluatePlacementTest($test))->handle();
+
+        $test->refresh();
+
+        expect($test->grammar_score)->toBe('0.00')
+            ->and($test->vocabulary_score)->toBe('100.00')
+            ->and($test->reading_score)->toBe('100.00');
+    });
+
+    it('sends the auto-score summary and the writing answers to the agent in the prompt', function () {
         $user = User::factory()->create();
         $test = seedPlacementTestWithAnswers($user->id);
 
@@ -214,7 +364,7 @@ describe('evaluation job', function () {
 
         AI::assertAgentWasPrompted(
             PlacementEvaluationAgent::class,
-            fn ($prompt) => $prompt->contains('Grammar answers') && $prompt->contains('Vocabulary answers') && $prompt->contains('Writing answers')
+            fn ($prompt) => $prompt->contains('Auto-scored') && $prompt->contains('Writing answers') && $prompt->contains('Grammar score') && ! $prompt->contains('Grammar answers')
         );
     });
 
@@ -253,6 +403,21 @@ describe('evaluation job', function () {
         expect($test->fresh()->status)->toBe(PlacementTestStatus::Failed);
     });
 
+    it('rejects an AI response that still contains the old grammar score keys only', function () {
+        $user = User::factory()->create();
+        $test = seedPlacementTestWithAnswers($user->id);
+
+        AI::fakeAgent(PlacementEvaluationAgent::class, [[
+            'cefr_level' => 'B1',
+            'grammar_score' => 90,
+            'vocabulary_score' => 80,
+        ]]);
+
+        (new EvaluatePlacementTest($test))->handle();
+
+        expect($test->fresh()->status)->toBe(PlacementTestStatus::Failed);
+    });
+
     it('marks the test as failed when the AI call throws', function () {
         $user = User::factory()->create();
         $test = seedPlacementTestWithAnswers($user->id);
@@ -281,6 +446,76 @@ describe('evaluation job', function () {
             ->and($test->strengths)->toBeNull()
             ->and($test->weaknesses)->toBeNull();
 
-        expect(PlacementAnswer::where('placement_test_id', $test->id)->count())->toBe(3);
+        expect(PlacementAnswer::where('placement_test_id', $test->id)->count())->toBe(4);
+    });
+
+    it('counts skipped questions as incorrect over the catalog total', function () {
+        $user = User::factory()->create();
+
+        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(25)->writing()->create();
+
+        $test = PlacementTest::factory()->create(['user_id' => $user->id]);
+
+        // Answer only the first grammar question correctly.
+        $test->placementAnswers()->create([
+            'placement_question_id' => $grammarQuestions->first()->id,
+            'answer' => $grammarQuestions->first()->correct_answer,
+        ]);
+
+        AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        (new EvaluatePlacementTest($test))->handle();
+
+        $test->refresh();
+
+        expect($test->grammar_score)->toBe('4.00')
+            ->and($test->vocabulary_score)->toBe('0.00')
+            ->and($test->reading_score)->toBe('0.00')
+            ->and($test->writing_score)->toBe('70.00')
+            ->and($test->status)->toBe(PlacementTestStatus::Analyzed);
+    });
+
+    it('reports answered/skipped counts and whole-part skips in the prompt', function () {
+        $user = User::factory()->create();
+
+        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
+        $writingQuestions = PlacementQuestion::factory()->count(25)->writing()->create();
+
+        $test = PlacementTest::factory()->create(['user_id' => $user->id]);
+
+        // Answer the first two grammar questions: one correct, one wrong.
+        $test->placementAnswers()->create([
+            'placement_question_id' => $grammarQuestions->first()->id,
+            'answer' => $grammarQuestions->first()->correct_answer,
+        ]);
+
+        $wrongAnswer = $grammarQuestions->first()->correct_answer === 'a' ? 'b' : 'a';
+        $test->placementAnswers()->create([
+            'placement_question_id' => $grammarQuestions->skip(1)->first()->id,
+            'answer' => $wrongAnswer,
+        ]);
+
+        // Answer one writing question.
+        $test->placementAnswers()->create([
+            'placement_question_id' => $writingQuestions->first()->id,
+            'answer' => 'A writing sample about daily life.',
+        ]);
+
+        AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        (new EvaluatePlacementTest($test))->handle();
+
+        AI::assertAgentWasPrompted(
+            PlacementEvaluationAgent::class,
+            fn ($prompt) => $prompt->contains('Grammar score: 4 (2/25 answered, 23 skipped)')
+                && $prompt->contains('the learner skipped the whole part')
+                && $prompt->contains('Writing answers (1 of 25 prompts answered')
+                && $prompt->contains('Auto-scored')
+        );
     });
 });

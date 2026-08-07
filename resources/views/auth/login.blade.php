@@ -56,15 +56,6 @@
                 <button type="submit" style="width: 100%; margin-top: 10px; border: 0; border-radius: 12px; padding: 15px; background: #17211E; color: #EFEAE2; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .2s, background .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#0E6B5C'" onmouseout="this.style.transform='none';this.style.background='#17211E'">Sign in →</button>
             </form>
 
-            <div style="display: flex; align-items: center; gap: 12px; margin: 22px 0; color: #B5AC9D; font-size: 11.5px;">
-                <div style="flex: 1; height: 1px; background: #E0D8CC;"></div>
-                <span>OR CONTINUE AS</span>
-                <div style="flex: 1; height: 1px; background: #E0D8CC;"></div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/login" style="flex: 1; text-align: center; border: 1px solid #E0D8CC; border-radius: 12px; padding: 12px; background: #FFFDFA; font: inherit; font-size: 13px; transition: all .2s;" onmouseover="this.style.borderColor='#0E6B5C';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0D8CC';this.style.transform='none'">Student demo</a>
-                <a href="/login" style="flex: 1; text-align: center; border: 1px solid #E0D8CC; border-radius: 12px; padding: 12px; background: #FFFDFA; font: inherit; font-size: 13px; transition: all .2s;" onmouseover="this.style.borderColor='#0E6B5C';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0D8CC';this.style.transform='none'">Admin demo</a>
-            </div>
             <div style="font-size: 12px; color: #A09889; margin-top: 22px; line-height: 1.55;">Sanctum token auth. Passwords hashed; every AI call runs on a queue.</div>
         </div>
     </div>

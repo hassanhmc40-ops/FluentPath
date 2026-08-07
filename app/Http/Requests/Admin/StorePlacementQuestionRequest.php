@@ -21,6 +21,11 @@ class StorePlacementQuestionRequest extends FormRequest
             'question' => ['required', 'string', 'max:2000'],
             'skill' => ['required', Rule::enum(Skill::class)],
             'level' => ['required', Rule::enum(CefrLevel::class)],
+            'option_a' => ['required_unless:skill,writing', 'string', 'max:255'],
+            'option_b' => ['required_unless:skill,writing', 'string', 'max:255'],
+            'option_c' => ['required_unless:skill,writing', 'string', 'max:255'],
+            'option_d' => ['required_unless:skill,writing', 'string', 'max:255'],
+            'correct_answer' => ['required_unless:skill,writing', 'string', 'in:a,b,c,d'],
         ];
     }
 }

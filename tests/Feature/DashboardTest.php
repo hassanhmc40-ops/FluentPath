@@ -7,6 +7,7 @@ use App\Models\Roadmap;
 use App\Models\RoadmapWeek;
 use App\Models\RoadmapWeekLesson;
 use App\Models\User;
+use App\Models\UserDailyActivity;
 use App\Models\WritingSubmission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -40,10 +41,15 @@ describe('dashboard for a brand new student', function () {
 
 describe('dashboard with seeded data', function () {
     it('computes exact numbers from the student\'s data', function () {
-        $user = User::factory()->create();
+        // Account predates the activity: without it, the streak cap would
+        // limit the streak to the account age.
+        $user = User::factory()->create(['created_at' => now()->subDays(3)]);
         Sanctum::actingAs($user);
 
-        $lessons = Lesson::factory()->count(5)->create();
+        $lessons = Lesson::factory()->count(5)->create(['level' => 'B1']);
+
+        // A lesson at another level must not count toward the student's catalog.
+        Lesson::factory()->create(['level' => 'C1']);
 
         $firstTest = PlacementTest::factory()->analyzed()->create([
             'user_id' => $user->id,
@@ -128,5 +134,39 @@ describe('dashboard with seeded data', function () {
         $this->getJson('/api/dashboard')
             ->assertStatus(200)
             ->assertJsonPath('data.cefr_level', 'C1');
+    });
+
+    it('caps the learning streak at the account age', function () {
+        // Brand new account (created today) with backdated activity: the
+        // streak must never exceed the days the account has existed.
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        foreach (range(0, 3) as $daysAgo) {
+            LessonProgress::factory()->create([
+                'user_id' => $user->id,
+                'lesson_id' => Lesson::factory()->create()->id,
+                'status' => 'completed',
+                'completed_at' => now()->subDays($daysAgo),
+            ]);
+        }
+
+        $this->getJson('/api/dashboard')
+            ->assertStatus(200)
+            ->assertJsonPath('data.learning_streak', 1);
+    });
+
+    it('counts opening the app (a daily activity row) as a streak day', function () {
+        $user = User::factory()->create(['created_at' => now()->subDays(2)]);
+        Sanctum::actingAs($user);
+
+        UserDailyActivity::create([
+            'user_id' => $user->id,
+            'activity_date' => now()->toDateString(),
+        ]);
+
+        $this->getJson('/api/dashboard')
+            ->assertStatus(200)
+            ->assertJsonPath('data.learning_streak', 1);
     });
 });

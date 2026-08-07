@@ -19,6 +19,7 @@ class StoreLessonRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string'],
             'skill' => ['required', Rule::enum(Skill::class)],
             'level' => ['required', Rule::enum(CefrLevel::class)],
         ];

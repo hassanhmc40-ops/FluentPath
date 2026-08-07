@@ -18,6 +18,7 @@ class UpdateLessonRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'filled', 'string', 'max:255'],
+            'content' => ['sometimes', 'required', 'string'],
             'skill' => ['sometimes', 'filled', Rule::enum(Skill::class)],
             'level' => ['sometimes', 'filled', Rule::enum(CefrLevel::class)],
         ];

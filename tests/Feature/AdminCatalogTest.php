@@ -68,6 +68,7 @@ describe('admin lessons', function () {
             'title' => 'Present Perfect Fundamentals',
             'skill' => 'grammar',
             'level' => 'B1',
+            'content' => "## What you'll learn\nPresent perfect connects the past to the present.",
         ])->assertStatus(201)
             ->assertJsonPath('data.title', 'Present Perfect Fundamentals')
             ->assertJsonPath('data.skill', 'grammar')
@@ -225,10 +226,18 @@ describe('admin placement questions', function () {
             'question' => 'What does "benevolent" mean?',
             'skill' => 'vocabulary',
             'level' => 'B2',
+            'option_a' => 'kind and generous',
+            'option_b' => 'quick and energetic',
+            'option_c' => 'strict and formal',
+            'option_d' => 'silent and reserved',
+            'correct_answer' => 'a',
         ])->assertStatus(201)
             ->assertJsonPath('data.skill', 'vocabulary');
 
-        $this->assertDatabaseHas('placement_questions', ['question' => 'What does "benevolent" mean?']);
+        $this->assertDatabaseHas('placement_questions', [
+            'question' => 'What does "benevolent" mean?',
+            'correct_answer' => 'a',
+        ]);
 
         $question = PlacementQuestion::first();
 
@@ -249,5 +258,27 @@ describe('admin placement questions', function () {
             'level' => 'Z9',
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['question', 'skill', 'level']);
+    });
+
+    it('requires answer options and a correct answer for multiple choice skills', function () {
+        $this->postJson('/api/admin/placement-questions', [
+            'question' => 'Choose the correct form.',
+            'skill' => 'grammar',
+            'level' => 'A1',
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['option_a', 'option_b', 'option_c', 'option_d', 'correct_answer']);
+    });
+
+    it('accepts a writing question without options and stores it option-less', function () {
+        $this->postJson('/api/admin/placement-questions', [
+            'question' => 'Write about your daily routine in 3-4 sentences.',
+            'skill' => 'writing',
+            'level' => 'B1',
+        ])->assertStatus(201);
+
+        $question = PlacementQuestion::first();
+
+        expect($question->correct_answer)->toBeNull()
+            ->and($question->option_a)->toBeNull();
     });
 });

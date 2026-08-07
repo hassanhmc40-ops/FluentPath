@@ -46,9 +46,13 @@ class DashboardService
             }
         }
 
-        $completedLessons = LessonProgress::completedFor($userId)->count();
+        $completedLessons = LessonProgress::completedFor($userId)
+            ->when($cefrLevel, fn ($query) => $query->whereHas('lesson', fn ($lesson) => $lesson->where('level', $cefrLevel->value)))
+            ->count();
 
-        $totalLessons = DB::table('lessons')->count();
+        $totalLessons = $cefrLevel
+            ? DB::table('lessons')->where('level', $cefrLevel->value)->count()
+            : 0;
 
         $writingHistory = WritingSubmission::where('user_id', $userId)
             ->where('status', WritingSubmissionStatus::Corrected->value)
@@ -189,6 +193,8 @@ class DashboardService
 
     private function computeStreak(int $userId): int
     {
+        $createdAt = DB::table('users')->where('id', $userId)->value('created_at');
+
         $dates = DB::table('lesson_progress')
             ->where('user_id', $userId)
             ->whereNotNull('completed_at')
@@ -204,6 +210,11 @@ class DashboardService
                     ->where('user_id', $userId)
                     ->whereNotNull('submitted_at')
                     ->select(DB::raw('DATE(submitted_at) as activity_date'))
+            )
+            ->union(
+                DB::table('user_daily_activity')
+                    ->where('user_id', $userId)
+                    ->select(DB::raw('activity_date'))
             )
             ->orderByDesc('activity_date')
             ->pluck('activity_date');
@@ -235,6 +246,13 @@ class DashboardService
 
             $streak++;
             $expected = $expected->subDay();
+        }
+
+        // A user can never have been active on more days than their account
+        // has existed: cap the streak at the account age.
+        if ($createdAt !== null) {
+            $cap = Carbon::parse($createdAt)->startOfDay()->diffInDays(now()->startOfDay()) + 1;
+            $streak = min($streak, $cap);
         }
 
         return $streak;

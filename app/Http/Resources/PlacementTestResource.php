@@ -16,6 +16,7 @@ class PlacementTestResource extends JsonResource
             'cefr_level' => $this->cefr_level,
             'grammar_score' => $this->grammar_score,
             'vocabulary_score' => $this->vocabulary_score,
+            'reading_score' => $this->reading_score,
             'writing_score' => $this->writing_score,
             'strengths' => $this->strengths,
             'weaknesses' => $this->weaknesses,

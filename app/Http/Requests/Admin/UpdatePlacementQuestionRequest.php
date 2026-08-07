@@ -20,6 +20,11 @@ class UpdatePlacementQuestionRequest extends FormRequest
             'question' => ['sometimes', 'filled', 'string', 'max:2000'],
             'skill' => ['sometimes', 'filled', Rule::enum(Skill::class)],
             'level' => ['sometimes', 'filled', Rule::enum(CefrLevel::class)],
+            'option_a' => ['sometimes', 'required_unless:skill,writing', 'string', 'max:255'],
+            'option_b' => ['sometimes', 'required_unless:skill,writing', 'string', 'max:255'],
+            'option_c' => ['sometimes', 'required_unless:skill,writing', 'string', 'max:255'],
+            'option_d' => ['sometimes', 'required_unless:skill,writing', 'string', 'max:255'],
+            'correct_answer' => ['sometimes', 'required_unless:skill,writing', 'string', 'in:a,b,c,d'],
         ];
     }
 }

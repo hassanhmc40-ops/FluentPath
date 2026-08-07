@@ -94,7 +94,7 @@
                 <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 19px; animation: rise .55s .05s both cubic-bezier(.2,.9,.2,1); transition: transform .25s, box-shadow .25s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 34px rgba(23,33,30,.09)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                     <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8378;">Lessons done</div>
                     <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -1.2px; margin: 7px 0 4px; color: #17211E;">{{ $lessonsCompleted }}/{{ $lessonsTotal }}</div>
-                    <div style="font-size: 12px; color: #8A8378;">of {{ $lessonsTotal }} total</div>
+                    <div style="font-size: 12px; color: #8A8378;">{{ $lessonsTotal > 0 ? 'of '.$lessonsTotal.' at '.$level : 'take the placement test to start' }}</div>
                 </div>
                 <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 19px; animation: rise .55s .1s both cubic-bezier(.2,.9,.2,1); transition: transform .25s, box-shadow .25s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 34px rgba(23,33,30,.09)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                     <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8378;">Avg writing</div>

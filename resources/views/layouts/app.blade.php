@@ -31,7 +31,7 @@
 
             if (! $user->isAdmin()) {
                 $placementLevel = \App\Models\PlacementTest::where('user_id', $user->id)
-                    ->where('status', 'analyzed')->latest('id')->first()?->cefr_level?->value ?? 'A1';
+                    ->where('status', 'analyzed')->latest('id')->first()?->cefr_level?->value;
 
                 $dates = collect();
                 $dates = $dates->merge(\App\Models\LessonProgress::where('user_id', $user->id)
@@ -40,6 +40,8 @@
                     ->whereNotNull('completed_at')->selectRaw('DATE(completed_at) as d')->pluck('d'));
                 $dates = $dates->merge(\App\Models\WritingSubmission::where('user_id', $user->id)
                     ->whereNotNull('submitted_at')->selectRaw('DATE(submitted_at) as d')->pluck('d'));
+                $dates = $dates->merge(\App\Models\UserDailyActivity::where('user_id', $user->id)
+                    ->selectRaw('activity_date as d')->pluck('d'));
                 $uniqueDates = $dates->unique()->sortDesc()->values();
                 $expected = now()->startOfDay();
                 foreach ($uniqueDates as $dateStr) {
@@ -48,6 +50,9 @@
                     $streak++;
                     $expected = $expected->subDay();
                 }
+                // A user can never have been active on more days than their account has existed.
+                $cap = \Carbon\Carbon::parse($user->created_at)->startOfDay()->diffInDays(now()->startOfDay()) + 1;
+                $streak = min($streak, $cap);
             }
         }
 
@@ -72,68 +77,71 @@
                 @if ($user->isAdmin())
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Platform</div>
                     <a href="/admin" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('admin') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('admin') && !request()->is('admin/*') ? '#29C39F' : 'transparent' }}; transition: background .22s, color .22s, transform .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('admin') && !request()->is('admin/*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('admin') && !request()->is('admin/*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">01</span><span style="flex: 1;">Overview</span>
+                        <span style="flex: 1;">Overview</span>
                     </a>
                     <a href="/admin/students" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('admin/students') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('admin/students') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('admin/students') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('admin/students') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">02</span><span style="flex: 1;">Students</span>
+                        <span style="flex: 1;">Students</span>
                     </a>
 
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Catalog</div>
                     <a href="/admin/lessons" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('admin/lessons*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('admin/lessons*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('admin/lessons*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('admin/lessons*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">03</span><span style="flex: 1;">Lessons</span>
+                        <span style="flex: 1;">Lessons</span>
                     </a>
                     <a href="/admin/quizzes" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('admin/quizzes*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('admin/quizzes*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('admin/quizzes*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('admin/quizzes*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">04</span><span style="flex: 1;">Exercises</span>
+                        <span style="flex: 1;">Exercises</span>
+                    </a>
+                    <a href="/admin/placement-questions" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('admin/placement-questions*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('admin/placement-questions*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('admin/placement-questions*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('admin/placement-questions*') ? '#06231D' : '#B9C5C0' }}'">
+                        <span style="flex: 1;">Placement test</span>
                     </a>
 
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Account</div>
                     <a href="/notifications" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('notifications') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('notifications') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('notifications') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('notifications') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">05</span><span style="flex: 1;">Notifications</span>
+                        <span style="flex: 1;">Notifications</span>
                         @if ($unreadCount > 0)
                             <span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: #E0603B; color: #FFF6F2;">{{ $unreadCount }}</span>
                         @endif
                     </a>
                     <a href="/settings" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('settings') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('settings') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('settings') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('settings') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">06</span><span style="flex: 1;">Settings</span>
+                        <span style="flex: 1;">Settings</span>
                     </a>
                 @else
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Learn</div>
                     <a href="/dashboard" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('dashboard') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('dashboard') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('dashboard') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('dashboard') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">01</span><span style="flex: 1;">Dashboard</span>
+                        <span style="flex: 1;">Dashboard</span>
                     </a>
                     <a href="/placement-test" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('placement-test*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('placement-test*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('placement-test*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('placement-test*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">02</span><span style="flex: 1;">Placement test</span>
+                        <span style="flex: 1;">Placement test</span>
                     </a>
                     <a href="/roadmap" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('roadmap') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('roadmap') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('roadmap') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('roadmap') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">03</span><span style="flex: 1;">Roadmap</span>
+                        <span style="flex: 1;">Roadmap</span>
                     </a>
                     <a href="/lessons" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('lessons*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('lessons*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('lessons*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('lessons*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">04</span><span style="flex: 1;">Lessons</span>
+                        <span style="flex: 1;">Lessons</span>
                     </a>
                     <a href="/quizzes" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('quizzes*') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('quizzes*') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('quizzes*') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('quizzes*') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">05</span><span style="flex: 1;">Exercises</span>
+                        <span style="flex: 1;">Exercises</span>
                     </a>
 
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Practice</div>
                     <a href="/writing" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('writing') && !request()->is('writing/submissions') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('writing') && !request()->is('writing/submissions') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('writing') && !request()->is('writing/submissions') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('writing') && !request()->is('writing/submissions') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">06</span><span style="flex: 1;">Writing studio</span>
+                        <span style="flex: 1;">Writing studio</span>
                     </a>
                     <a href="/writing/submissions" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('writing/submissions') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('writing/submissions') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('writing/submissions') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('writing/submissions') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">07</span><span style="flex: 1;">My submissions</span>
+                        <span style="flex: 1;">My submissions</span>
                     </a>
 
                     <div style="font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #61726C; padding: 16px 12px 7px;">Account</div>
                     <a href="/progress" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('progress') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('progress') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('progress') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('progress') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">08</span><span style="flex: 1;">Progress</span>
+                        <span style="flex: 1;">Progress</span>
                     </a>
                     <a href="/notifications" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('notifications') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('notifications') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('notifications') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('notifications') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">09</span><span style="flex: 1;">Notifications</span>
+                        <span style="flex: 1;">Notifications</span>
                         @if ($unreadCount > 0)
                             <span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: #E0603B; color: #FFF6F2;">{{ $unreadCount }}</span>
                         @endif
                     </a>
                     <a href="/settings" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: {{ request()->is('settings') ? '#06231D' : '#B9C5C0' }}; background: {{ request()->is('settings') ? '#29C39F' : 'transparent' }}; transition: all .22s;" onmouseover="this.style.background='#24312D';this.style.transform='translateX(3px)';this.style.color='#EFEAE2'" onmouseout="this.style.background='{{ request()->is('settings') ? '#29C39F' : 'transparent' }}';this.style.transform='none';this.style.color='{{ request()->is('settings') ? '#06231D' : '#B9C5C0' }}'">
-                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; opacity: .65; width: 16px;">10</span><span style="flex: 1;">Settings</span>
+                        <span style="flex: 1;">Settings</span>
                     </a>
                 @endif
             </nav>
@@ -158,7 +166,7 @@
                     <div style="width: 30px; height: 30px; border-radius: 50%; background: #E0603B; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #FFF6F2;">{{ $userInitial }}</div>
                     <div style="line-height: 1.3; flex: 1;">
                         <div style="font-size: 13px; font-weight: 500;">{{ $user->name }}</div>
-                        <div style="font-size: 11px; color: #7E9089;">{{ $user->isAdmin() ? 'Admin · Catalog' : 'Student · ' . $placementLevel }}</div>
+                        <div style="font-size: 11px; color: #7E9089;">{{ $user->isAdmin() ? 'Admin · Catalog' : 'Student · ' . ($placementLevel ?? 'No level yet') }}</div>
                     </div>
                     <form method="POST" action="/logout">
                         @csrf

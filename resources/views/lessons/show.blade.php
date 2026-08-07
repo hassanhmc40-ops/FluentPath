@@ -35,6 +35,26 @@
 
     $content = $sections[$skill] ?? $sections['grammar'];
 
+    // Parse the admin-authored lesson content (mini-markdown: ## , -, >) so it
+    // renders as headings, bullets and example callouts. Falls back to the
+    // generated sections above when the lesson has no content yet.
+    $blocks = [];
+    if ($lesson->content) {
+        foreach (preg_split('/\R/', trim($lesson->content)) ?: [] as $line) {
+            $line = rtrim($line);
+            if ($line === '' || $line === '---') { continue; }
+            if (str_starts_with($line, '## ')) {
+                $blocks[] = ['type' => 'h', 'text' => trim(substr($line, 3))];
+            } elseif (str_starts_with($line, '- ')) {
+                $blocks[] = ['type' => 'li', 'text' => trim(substr($line, 2))];
+            } elseif (str_starts_with($line, '> ')) {
+                $blocks[] = ['type' => 'ex', 'text' => trim(substr($line, 2))];
+            } else {
+                $blocks[] = ['type' => 'p', 'text' => $line];
+            }
+        }
+    }
+
     $whyText = match ($skill) {
         'grammar' => 'Grammar is the engine of meaning. This lesson isolates the pattern so you can practise it in the attached exercises until it becomes automatic.',
         'vocabulary' => 'Words are learned in chunks. This lesson builds the exact phrases and collocations you need at your level, ready to reuse in writing.',
@@ -64,6 +84,24 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 22px; margin-top: 28px;">
+            @if (!empty($blocks))
+                @foreach ($blocks as $i => $block)
+                    <div style="animation: rise .5s {{ 0.1 + $i * 0.05 }}s both;">
+                        @if ($block['type'] === 'h')
+                            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700;">{{ $block['text'] }}</div>
+                        @elseif ($block['type'] === 'li')
+                            <div style="display: flex; gap: 10px; font-size: 14.5px; line-height: 1.7; color: #3D453F; margin-top: 9px;">
+                                <span style="color: #29C39F; font-weight: 700; flex: none;">—</span>
+                                <span>{{ $block['text'] }}</span>
+                            </div>
+                        @elseif ($block['type'] === 'ex')
+                            <div style="margin-top: 12px; background: #F3EFE8; border-left: 3px solid #29C39F; border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; line-height: 1.7; color: #17211E;">{{ $block['text'] }}</div>
+                        @else
+                            <div style="font-size: 14.5px; line-height: 1.75; color: #3D453F; margin-top: 8px;">{{ $block['text'] }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
             @foreach ($content as $i => $s)
                 <div style="animation: rise .5s {{ 0.1 + $i * 0.08 }}s both;">
                     <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700;">{{ $s['h'] }}</div>
@@ -73,6 +111,7 @@
                     @endif
                 </div>
             @endforeach
+            @endif
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 32px; align-items: center;">

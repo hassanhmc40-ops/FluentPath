@@ -32,7 +32,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'track.daily'])->group(function () {
     Route::post('/logout', [LogoutController::class, 'logout']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/placement-test', [PlacementTestController::class, 'show']);
     Route::post('/placement-test', [PlacementTestController::class, 'store'])->middleware('throttle:ai');
+    Route::post('/placement-test/retake', [PlacementTestController::class, 'retake']);
 
     Route::get('/roadmap', [RoadmapController::class, 'show']);
     Route::post('/roadmap', [RoadmapController::class, 'store'])->middleware('throttle:ai');

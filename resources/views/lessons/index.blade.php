@@ -6,8 +6,17 @@
 @section('content')
 <div style="animation: fadein .4s both;">
 
+    @if ($level === null)
+        <div style="background: #FFFDFA; border: 1px dashed #CFC6B8; border-radius: 20px; padding: 64px 40px; text-align: center; animation: rise .5s both;">
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.4px; color: #17211E;">Complete your placement test first</div>
+            <div style="font-size: 14px; color: #6C6A63; margin-top: 12px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.7;">Your lessons are personalised to your level. Take the placement test so we can show you the lessons and exercises that match your English level.</div>
+            <a href="/placement-test" style="display: inline-block; margin-top: 26px; border: 0; border-radius: 999px; padding: 14px 28px; background: #17211E; color: #EFEAE2; font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: transform .2s, background .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#0E6B5C'" onmouseout="this.style.transform='none';this.style.background='#17211E'">Take the placement test →</a>
+        </div>
+    @else
+
     {{-- Filter pills --}}
-    <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;" id="filter-row">
+    <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;" id="filter-row">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .6px; padding: 8px 14px; border-radius: 999px; background: #17211E; color: #29C39F;">{{ $level->value }} level</span>
         @foreach (['All', 'Grammar', 'Vocabulary', 'Reading', 'Writing'] as $filter)
             <button
                 type="button"
@@ -38,7 +47,29 @@
                     'reading' => 'Comprehension, skimming, and inference practice.',
                     'writing' => 'Paragraph structure, coherence, and written expression.',
                 ];
-                $desc = $descriptions[$skill] ?? 'A focused lesson to build your skills.';
+
+                // Prefer a real excerpt from the lesson content: the first plain
+                // paragraph after a heading, truncated to two lines.
+                $desc = '';
+                if ($lesson->content) {
+                    foreach (preg_split('/\R/', trim($lesson->content)) ?: [] as $line) {
+                        $line = trim($line);
+                        if ($line === '' || str_starts_with($line, '## ')) {
+                            continue;
+                        }
+                        if (str_starts_with($line, '- ') || str_starts_with($line, '> ')) {
+                            continue;
+                        }
+                        $desc = $line;
+                        break;
+                    }
+                    if ($desc !== '' && mb_strlen($desc) > 150) {
+                        $desc = mb_substr($desc, 0, 147).'…';
+                    }
+                }
+                if ($desc === '') {
+                    $desc = $descriptions[$skill] ?? 'A focused lesson to build your skills.';
+                }
             @endphp
 
             <div
@@ -66,6 +97,7 @@
             </div>
         @endforelse
     </div>
+    @endif
 </div>
 
 @endsection
