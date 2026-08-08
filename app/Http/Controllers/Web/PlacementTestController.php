@@ -20,8 +20,17 @@ class PlacementTestController extends Controller
             ->latest('id')
             ->first();
 
+        $history = PlacementTest::where('user_id', $request->user()->id)
+            ->where('status', PlacementTestStatus::Analyzed)
+            ->latest('id')
+            ->get()
+            ->slice(1)
+            ->values();
+
         return view('placement-test', [
             'test' => $test,
+            'history' => $history,
+            'failed' => $test && $test->status === PlacementTestStatus::Failed,
             'questions' => PlacementQuestion::orderBy('id')->get(),
             'processing' => $test && in_array($test->status, [
                 PlacementTestStatus::Pending,
@@ -54,8 +63,11 @@ class PlacementTestController extends Controller
             ->latest('id')
             ->first();
 
-        if ($test && $test->status === PlacementTestStatus::Analyzed) {
-            $test->delete(); // cascades placement answers + linked roadmaps
+        // Analyzed tests (and their roadmaps) are preserved as historical record;
+        // a failed, pending or processing attempt is a dead end — remove it so the
+        // student can submit a fresh test.
+        if ($test && $test->status !== PlacementTestStatus::Analyzed) {
+            $test->delete();
         }
 
         return redirect('/placement-test');

@@ -28,6 +28,23 @@
             @endforeach
         </div>
         <div style="margin-top: 16px; text-align: center; font-size: 13px; color: #8A8378;">Generating your roadmap...</div>
+        <script>
+            (function () {
+                // Auto-refresh until generation finishes (this block only renders while processing).
+                setTimeout(function () { window.location.reload(); }, 5000);
+            })();
+        </script>
+
+    @elseif ($failed)
+        {{-- Failed state --}}
+        <div style="background: #FFFDFA; border: 1px dashed #CFC6B8; border-radius: 20px; padding: 50px 40px; text-align: center; animation: rise .5s both;">
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -.4px;">Roadmap generation failed</div>
+            <div style="font-size: 14px; color: #6C6A63; margin-top: 8px; line-height: 1.6; max-width: 420px; margin-left: auto; margin-right: auto;">The AI couldn't produce a valid 4-week plan this time — every roadmap must contain exactly 16 lessons from the catalog, 4 per week. Try again and a fresh generation will run.</div>
+            <form method="POST" action="/roadmap" style="margin-top: 22px;">
+                @csrf
+                <button type="submit" style="border: 0; border-radius: 999px; padding: 13px 26px; background: #0E6B5C; color: #F2FBF8; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: transform .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Try again</button>
+            </form>
+        </div>
 
     @elseif ($roadmap === null)
         {{-- Empty state --}}

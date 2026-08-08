@@ -106,7 +106,7 @@ describe('student pages', function () {
         Queue::assertPushed(EvaluatePlacementTest::class);
     });
 
-    it('retakes the placement test: deletes the old test and roadmap and shows the form again', function () {
+    it('retakes the placement test: preserves the old test and roadmap and keeps showing the result', function () {
         $test = PlacementTest::factory()->analyzed()->create(['user_id' => $this->user->id]);
         Roadmap::factory()->create([
             'user_id' => $this->user->id,
@@ -118,18 +118,47 @@ describe('student pages', function () {
         $this->post('/placement-test/retake')
             ->assertRedirect('/placement-test');
 
-        $this->assertDatabaseCount('placement_tests', 0);
-        $this->assertDatabaseCount('roadmaps', 0);
+        $this->assertDatabaseCount('placement_tests', 1);
+        $this->assertDatabaseCount('roadmaps', 1);
 
         $this->get('/placement-test')
             ->assertStatus(200)
-            ->assertSee('Submit placement test')
-            ->assertDontSee('View my roadmap');
+            ->assertSee('View my roadmap')
+            ->assertSee('Retake test')
+            ->assertDontSee('Submit placement test');
     });
 
     it('retaking is a no-op when the student has no analyzed test', function () {
         $this->post('/placement-test/retake')->assertRedirect('/placement-test');
         $this->assertDatabaseCount('placement_tests', 0);
+    });
+
+    it('retaking clears a failed attempt so the form shows again', function () {
+        PlacementTest::factory()->failed()->create(['user_id' => $this->user->id]);
+
+        $this->post('/placement-test/retake')
+            ->assertRedirect('/placement-test');
+
+        $this->assertDatabaseCount('placement_tests', 0);
+
+        $this->get('/placement-test')
+            ->assertStatus(200)
+            ->assertSee('Submit placement test')
+            ->assertDontSee('Evaluation failed');
+    });
+
+    it('retaking clears a stuck pending attempt so the student is not stuck on the spinner', function () {
+        PlacementTest::factory()->create(['user_id' => $this->user->id]);
+
+        $this->post('/placement-test/retake')
+            ->assertRedirect('/placement-test');
+
+        $this->assertDatabaseCount('placement_tests', 0);
+
+        $this->get('/placement-test')
+            ->assertStatus(200)
+            ->assertSee('Submit placement test')
+            ->assertDontSee('Evaluating your submission');
     });
 
     it('rejects GET requests to the retake endpoint', function () {

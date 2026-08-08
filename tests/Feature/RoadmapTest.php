@@ -16,15 +16,19 @@ use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
+/**
+ * A valid roadmap response matching the demo contract: 4 weeks x exactly
+ * 4 lessons each (needs at least 16 distinct lesson ids, reused in order).
+ */
 function validRoadmapResponse(array $lessonIds): array
 {
     return [
         'title' => 'Your 4-Week English Boost',
         'weeks' => [
-            ['week_number' => 1, 'objective' => 'Foundations', 'lesson_ids' => [$lessonIds[0], $lessonIds[1]]],
-            ['week_number' => 2, 'objective' => 'Practice', 'lesson_ids' => [$lessonIds[2]]],
-            ['week_number' => 3, 'objective' => 'Expand', 'lesson_ids' => [$lessonIds[3], $lessonIds[4]]],
-            ['week_number' => 4, 'objective' => 'Consolidate', 'lesson_ids' => [$lessonIds[5]]],
+            ['week_number' => 1, 'objective' => 'Foundations', 'lesson_ids' => array_slice($lessonIds, 0, 4)],
+            ['week_number' => 2, 'objective' => 'Practice', 'lesson_ids' => array_slice($lessonIds, 4, 4)],
+            ['week_number' => 3, 'objective' => 'Expand', 'lesson_ids' => array_slice($lessonIds, 8, 4)],
+            ['week_number' => 4, 'objective' => 'Consolidate', 'lesson_ids' => array_slice($lessonIds, 12, 4)],
         ],
     ];
 }
@@ -38,6 +42,19 @@ function seedAnalyzedTest(int $userId, ?string $level = null): PlacementTest
     }
 
     return PlacementTest::factory()->analyzed()->create($attributes);
+}
+
+/**
+ * Create lessons with explicit ids (id is guarded on the model, so the
+ * factory cannot set it via create()).
+ */
+function createLessonsWithIds(array $ids): void
+{
+    foreach ($ids as $id) {
+        $lesson = Lesson::factory()->make(['level' => 'A1']);
+        $lesson->id = $id;
+        $lesson->save();
+    }
 }
 
 describe('generation', function () {
@@ -151,7 +168,7 @@ describe('show', function () {
 });
 
 describe('generation job', function () {
-    it('persists exactly 4 weeks with ordered lessons and marks the roadmap generated', function () {
+    it('persists exactly 4 weeks with 4 ordered lessons each and marks the roadmap generated', function () {
         $user = User::factory()->create();
         $placementTest = seedAnalyzedTest($user->id);
 
@@ -161,7 +178,7 @@ describe('generation job', function () {
             'title' => 'Generating...',
         ]);
 
-        $lessons = Lesson::factory()->count(6)->create();
+        $lessons = Lesson::factory()->count(16)->create();
 
         AI::fakeAgent(RoadmapGenerationAgent::class, [validRoadmapResponse($lessons->pluck('id')->all())]);
 
@@ -174,7 +191,7 @@ describe('generation job', function () {
             ->and($roadmap->generated_at)->not->toBeNull();
 
         $this->assertDatabaseCount('roadmap_weeks', 4);
-        $this->assertDatabaseCount('roadmap_week_lessons', 6);
+        $this->assertDatabaseCount('roadmap_week_lessons', 16);
 
         $weeks = RoadmapWeek::where('roadmap_id', $roadmap->id)->orderBy('week_number')->get();
 
@@ -184,8 +201,13 @@ describe('generation job', function () {
             ->orderBy('display_order')
             ->get();
 
-        expect($week1Lessons->pluck('display_order')->all())->toBe([1, 2])
-            ->and($week1Lessons->pluck('lesson_id')->all())->toBe([$lessons[0]->id, $lessons[1]->id]);
+        expect($week1Lessons->pluck('display_order')->all())->toBe([1, 2, 3, 4])
+            ->and($week1Lessons->pluck('lesson_id')->all())->toBe([
+                $lessons[0]->id,
+                $lessons[1]->id,
+                $lessons[2]->id,
+                $lessons[3]->id,
+            ]);
 
         $this->assertDatabaseHas('notifications', [
             'user_id' => $user->id,
@@ -204,7 +226,7 @@ describe('generation job', function () {
             'placement_test_id' => $placementTest->id,
         ]);
 
-        $lessons = Lesson::factory()->count(6)->create(['level' => 'B1']);
+        $lessons = Lesson::factory()->count(16)->create(['level' => 'B1']);
 
         AI::fakeAgent(RoadmapGenerationAgent::class, [validRoadmapResponse($lessons->pluck('id')->all())]);
 
@@ -226,10 +248,10 @@ describe('generation job', function () {
             'title' => 'Original Title',
         ]);
 
-        $lessons = Lesson::factory()->count(6)->create();
+        $lessons = Lesson::factory()->count(16)->create();
 
         $invalidResponse = validRoadmapResponse($lessons->pluck('id')->all());
-        $invalidResponse['weeks'][0]['lesson_ids'] = [$lessons[0]->id, 999999];
+        $invalidResponse['weeks'][0]['lesson_ids'] = [$lessons[0]->id, $lessons[1]->id, $lessons[2]->id, 999999];
 
         AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
 
@@ -288,10 +310,10 @@ describe('generation job', function () {
             'placement_test_id' => $placementTest->id,
         ]);
 
-        $lessons = Lesson::factory()->count(6)->create();
+        $lessons = Lesson::factory()->count(16)->create();
 
         $invalidResponse = validRoadmapResponse($lessons->pluck('id')->all());
-        $invalidResponse['weeks'][0]['lesson_ids'] = ['not-an-int'];
+        $invalidResponse['weeks'][0]['lesson_ids'] = ['not-an-int', $lessons[1]->id, $lessons[2]->id, $lessons[3]->id];
 
         AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
 
@@ -302,7 +324,216 @@ describe('generation job', function () {
         $this->assertDatabaseCount('roadmap_weeks', 0);
     });
 
-    it('marks the roadmap failed when the AI call throws', function () {
+    it('rejects the whole response when a week contains fewer than 4 lessons', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        $lessons = Lesson::factory()->count(16)->create();
+
+        $invalidResponse = validRoadmapResponse($lessons->pluck('id')->all());
+        $invalidResponse['weeks'][0]['lesson_ids'] = array_slice($lessons->pluck('id')->all(), 0, 3);
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
+
+        $this->assertDatabaseCount('roadmap_weeks', 0);
+    });
+
+    it('rejects the whole response when a week contains more than 4 lessons', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        $lessons = Lesson::factory()->count(16)->create();
+
+        $allIds = $lessons->pluck('id')->all();
+        $invalidResponse = validRoadmapResponse($allIds);
+        $invalidResponse['weeks'][0]['lesson_ids'] = array_slice($allIds, 0, 5);
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
+
+        $this->assertDatabaseCount('roadmap_weeks', 0);
+    });
+
+    it('rejects the whole response when a lesson is repeated across weeks', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        $lessons = Lesson::factory()->count(16)->create();
+
+        $invalidResponse = validRoadmapResponse($lessons->pluck('id')->all());
+        $invalidResponse['weeks'][1]['lesson_ids'] = $invalidResponse['weeks'][0]['lesson_ids'];
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
+
+        $this->assertDatabaseCount('roadmap_weeks', 0);
+    });
+
+    it('instructs the agent to pick exactly 4 lessons per week', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id, 'B1');
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        $lessons = Lesson::factory()->count(16)->create(['level' => 'B1']);
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [validRoadmapResponse($lessons->pluck('id')->all())]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        AI::assertAgentWasPrompted(
+            RoadmapGenerationAgent::class,
+            fn ($prompt) => $prompt->contains('exactly 4 lessons for every week')
+                && $prompt->contains('16 lessons in total')
+                && $prompt->contains('at most once')
+                && $prompt->contains('one element per lesson id')
+        );
+    });
+
+    it('recovers a response where the agent glued a whole week into a single lesson id', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        createLessonsWithIds(range(101, 116));
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [[
+            'title' => 'Glued Week Plan',
+            'weeks' => [
+                ['week_number' => 1, 'objective' => 'Foundations', 'lesson_ids' => [101102103104]],
+                ['week_number' => 2, 'objective' => 'Practice', 'lesson_ids' => [105106107108]],
+                ['week_number' => 3, 'objective' => 'Expand', 'lesson_ids' => [109110111112]],
+                ['week_number' => 4, 'objective' => 'Consolidate', 'lesson_ids' => [113114115116]],
+            ],
+        ]]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Generated);
+
+        $this->assertDatabaseCount('roadmap_weeks', 4);
+        $this->assertDatabaseCount('roadmap_week_lessons', 16);
+
+        $week = RoadmapWeek::where('roadmap_id', $roadmap->id)->where('week_number', 1)->first();
+
+        expect(RoadmapWeekLesson::where('roadmap_week_id', $week->id)->orderBy('display_order')->pluck('lesson_id')->all())
+            ->toBe([101, 102, 103, 104]);
+    });
+
+    it('recovers partly glued weeks when they still decode to exactly 4 unique lessons', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        createLessonsWithIds(range(101, 116));
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [[
+            'title' => 'Partly Glued Plan',
+            'weeks' => [
+                ['week_number' => 1, 'objective' => 'Foundations', 'lesson_ids' => [101, 102, 103, 104]],
+                ['week_number' => 2, 'objective' => 'Practice', 'lesson_ids' => [105, 106107108]],
+                ['week_number' => 3, 'objective' => 'Expand', 'lesson_ids' => [109110, 111, 112]],
+                ['week_number' => 4, 'objective' => 'Consolidate', 'lesson_ids' => [113, 114, 115116]],
+            ],
+        ]]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Generated);
+
+        $this->assertDatabaseCount('roadmap_weeks', 4);
+        $this->assertDatabaseCount('roadmap_week_lessons', 16);
+
+        $week = RoadmapWeek::where('roadmap_id', $roadmap->id)->where('week_number', 4)->first();
+
+        expect(RoadmapWeekLesson::where('roadmap_week_id', $week->id)->orderBy('display_order')->pluck('lesson_id')->all())
+            ->toBe([113, 114, 115, 116]);
+    });
+
+    it('marks the roadmap failed when glued ids cannot be decoded into catalog lessons', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        createLessonsWithIds(range(101, 116));
+
+        $invalidResponse = validRoadmapResponse(range(101, 116));
+        $invalidResponse['weeks'][0]['lesson_ids'] = [101102103999];
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
+
+        $this->assertDatabaseCount('roadmap_weeks', 0);
+        $this->assertDatabaseCount('roadmap_week_lessons', 0);
+    });
+
+    it('marks the roadmap failed when glued ids decode into fewer than 4 lessons', function () {
+        $user = User::factory()->create();
+        $placementTest = seedAnalyzedTest($user->id);
+
+        $roadmap = Roadmap::factory()->create([
+            'user_id' => $user->id,
+            'placement_test_id' => $placementTest->id,
+        ]);
+
+        createLessonsWithIds(range(101, 116));
+
+        $invalidResponse = validRoadmapResponse(range(101, 116));
+        $invalidResponse['weeks'][0]['lesson_ids'] = [101102];
+
+        AI::fakeAgent(RoadmapGenerationAgent::class, [$invalidResponse]);
+
+        (new GenerateRoadmap($roadmap))->handle();
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
+
+        $this->assertDatabaseCount('roadmap_weeks', 0);
+    });
+
+    it('rethrows AI failures for queue retry and marks the roadmap failed via failed()', function () {
         $user = User::factory()->create();
         $placementTest = seedAnalyzedTest($user->id);
 
@@ -315,7 +546,18 @@ describe('generation job', function () {
             fn () => throw new RuntimeException('Groq is down'),
         ]);
 
-        (new GenerateRoadmap($roadmap))->handle();
+        $job = new GenerateRoadmap($roadmap);
+
+        try {
+            $job->handle();
+            $this->fail('Expected the AI exception to propagate for queue retry.');
+        } catch (RuntimeException $e) {
+            expect($e->getMessage())->toBe('Groq is down');
+        }
+
+        expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Processing);
+
+        $job->failed(new RuntimeException('Groq is down'));
 
         expect($roadmap->fresh()->status)->toBe(RoadmapStatus::Failed);
     });

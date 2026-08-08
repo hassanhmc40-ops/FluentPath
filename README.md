@@ -120,6 +120,9 @@ php artisan migrate --seed
 php artisan serve
 
 # 8. Start the queue worker (required for AI features)
+#    Results (placement, roadmap, writing) only arrive while this runs.
+#    Keep it in its own terminal; jobs are retried up to 3 times with backoff
+#    and time out after 300s (AI calls use a 120s HTTP timeout).
 php artisan queue:work
 
 # 9. (Optional) Start the task scheduler

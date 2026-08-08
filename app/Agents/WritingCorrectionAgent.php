@@ -11,20 +11,20 @@ class WritingCorrectionAgent extends AnonymousAgent implements HasStructuredOutp
     public function schema(JsonSchema $schema): array
     {
         return [
-            'corrected_text' => $schema->string(),
-            'score' => $schema->number(),
-            'grammar_feedback' => $schema->string(),
-            'vocabulary_feedback' => $schema->string(),
-            'fluency_feedback' => $schema->string(),
+            'corrected_text' => $schema->string()->required(),
+            'score' => $schema->number()->required(),
+            'grammar_feedback' => $schema->string()->required(),
+            'vocabulary_feedback' => $schema->string()->required(),
+            'fluency_feedback' => $schema->string()->required(),
             'mistakes' => $schema->array()->items(
                 $schema->object([
-                    'original' => $schema->string(),
-                    'correction' => $schema->string(),
-                    'rule' => $schema->string(),
+                    'original' => $schema->string()->required(),
+                    'correction' => $schema->string()->required(),
+                    'rule' => $schema->string()->required(),
                 ])
-            ),
-            'recommendations' => $schema->array()->items($schema->string()),
-            'next_topics' => $schema->array()->items($schema->string()),
+            )->required(),
+            'recommendations' => $schema->array()->items($schema->string())->required(),
+            'next_topics' => $schema->array()->items($schema->string())->required(),
         ];
     }
 }

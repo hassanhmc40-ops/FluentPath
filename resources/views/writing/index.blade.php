@@ -57,11 +57,17 @@
                     <div style="height: 13px; border-radius: 7px; margin-bottom: 12px; width: {{ $w }}; background: linear-gradient(90deg, #EFE9DF 25%, #F8F4ED 37%, #EFE9DF 63%); background-size: 600px 100%; animation: shimmer 1.3s linear infinite;"></div>
                 @endforeach
             </div>
+            <script>
+                (function () {
+                    // Auto-refresh until the correction finishes (this block only renders while loading).
+                    setTimeout(function () { window.location.reload(); }, 5000);
+                })();
+            </script>
         @elseif ($state === 'failed')
             <div style="background: #FFF6F2; border: 1px solid #F0C9B9; border-radius: 20px; padding: 30px; animation: rise .4s both;">
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #A73E1E;">AI PROVIDER UNAVAILABLE</div>
                 <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 21px; font-weight: 700; margin: 10px 0 8px;">Correction could not be completed</div>
-                <div style="font-size: 13.5px; color: #7A5A4C; line-height: 1.6;">Your text is saved and the submission stays in <strong>pending</strong>. The failure is logged; retrying re-queues the same job.</div>
+                <div style="font-size: 13.5px; color: #7A5A4C; line-height: 1.6;">Your text is saved and the submission is marked as <strong>failed</strong>. The failure is logged; retrying submits the same text for correction again.</div>
                 <form method="POST" action="/writing">
                     @csrf
                     <input type="hidden" name="prompt" value="{{ $latest->prompt }}">

@@ -5,16 +5,19 @@ namespace App\Jobs;
 use App\Agents\PlacementEvaluationAgent;
 use App\Enums\CefrLevel;
 use App\Enums\PlacementTestStatus;
+use App\Enums\RoadmapStatus;
 use App\Enums\Skill;
 use App\Models\Notification;
 use App\Models\PlacementQuestion;
 use App\Models\PlacementTest;
+use App\Models\Roadmap;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class EvaluatePlacementTest implements ShouldQueue
 {
@@ -22,6 +25,15 @@ class EvaluatePlacementTest implements ShouldQueue
 
     /** Skills that are graded deterministically (MCQ). */
     protected const AUTO_SCORED_SKILLS = ['grammar', 'vocabulary', 'reading'];
+
+    /** The AI evaluation of a full submission (all writing essays) can take a while. */
+    public int $timeout = 300;
+
+    /** Retry transient provider errors (rate limits, 5xx) with backoff. */
+    public int $tries = 3;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         public PlacementTest $placementTest,
@@ -70,7 +82,7 @@ Writing answers ('.$writingCount.' of '.$writingTotal.' prompts answered; grade 
                 tools: [],
             );
 
-            $response = $agent->prompt($prompt);
+            $response = $agent->prompt($prompt, timeout: 120);
 
             $data = $response->toArray();
 
@@ -102,14 +114,42 @@ Writing answers ('.$writingCount.' of '.$writingTotal.' prompts answered; grade 
                 'title' => 'Placement Test Analyzed',
                 'message' => 'Your placement test has been analyzed.',
             ]);
-        } catch (\Throwable $e) {
+
+            // Kick off the roadmap right after a successful evaluation so the
+            // student lands on a generating roadmap (never a dead end). Guarded
+            // with firstOrCreate so a queue retry of this job can't duplicate it.
+            $roadmap = Roadmap::firstOrCreate(
+                ['placement_test_id' => $this->placementTest->id],
+                [
+                    'user_id' => $this->placementTest->user_id,
+                    'title' => 'Generating...',
+                    'status' => RoadmapStatus::Pending,
+                ],
+            );
+
+            if ($roadmap->wasRecentlyCreated) {
+                GenerateRoadmap::dispatch($roadmap);
+            }
+        } catch (Throwable $e) {
             Log::error('PlacementTest AI evaluation failed', [
                 'placement_test_id' => $this->placementTest->id,
                 'error' => $e->getMessage(),
             ]);
 
-            $this->placementTest->update(['status' => PlacementTestStatus::Failed]);
+            // Let the queue retry transient failures (see $tries/$backoff);
+            // the failed() hook marks the test as failed once attempts run out.
+            throw $e;
         }
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Log::error('PlacementTest AI evaluation failed after retries', [
+            'placement_test_id' => $this->placementTest->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        $this->placementTest->update(['status' => PlacementTestStatus::Failed]);
     }
 
     /**

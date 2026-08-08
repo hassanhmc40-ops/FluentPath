@@ -305,6 +305,8 @@ describe('evaluation job', function () {
 
         AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
 
+        Queue::fake();
+
         (new EvaluatePlacementTest($test))->handle();
 
         $test->refresh();
@@ -345,6 +347,8 @@ describe('evaluation job', function () {
 
         AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
 
+        Queue::fake();
+
         (new EvaluatePlacementTest($test))->handle();
 
         $test->refresh();
@@ -359,6 +363,8 @@ describe('evaluation job', function () {
         $test = seedPlacementTestWithAnswers($user->id);
 
         AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        Queue::fake();
 
         (new EvaluatePlacementTest($test))->handle();
 
@@ -418,7 +424,7 @@ describe('evaluation job', function () {
         expect($test->fresh()->status)->toBe(PlacementTestStatus::Failed);
     });
 
-    it('marks the test as failed when the AI call throws', function () {
+    it('rethrows AI failures for queue retry and marks the test failed via failed()', function () {
         $user = User::factory()->create();
         $test = seedPlacementTestWithAnswers($user->id);
 
@@ -426,7 +432,18 @@ describe('evaluation job', function () {
             fn () => throw new RuntimeException('Groq is down'),
         ]);
 
-        (new EvaluatePlacementTest($test))->handle();
+        $job = new EvaluatePlacementTest($test);
+
+        try {
+            $job->handle();
+            $this->fail('Expected the AI exception to propagate for queue retry.');
+        } catch (RuntimeException $e) {
+            expect($e->getMessage())->toBe('Groq is down');
+        }
+
+        expect($test->fresh()->status)->toBe(PlacementTestStatus::Processing);
+
+        $job->failed(new RuntimeException('Groq is down'));
 
         expect($test->fresh()->status)->toBe(PlacementTestStatus::Failed);
     });
@@ -466,6 +483,8 @@ describe('evaluation job', function () {
         ]);
 
         AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        Queue::fake();
 
         (new EvaluatePlacementTest($test))->handle();
 
@@ -507,6 +526,8 @@ describe('evaluation job', function () {
         ]);
 
         AI::fakeAgent(PlacementEvaluationAgent::class, [validPlacementAnalysis()]);
+
+        Queue::fake();
 
         (new EvaluatePlacementTest($test))->handle();
 

@@ -14,10 +14,18 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class GenerateRoadmap implements ShouldQueue
 {
     use Dispatchable, Queueable, SerializesModels;
+
+    public int $timeout = 300;
+
+    public int $tries = 3;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         public Roadmap $roadmap,
@@ -48,7 +56,9 @@ Available Lessons (id, title, skill, level):
 
 The learner should primarily work with lessons at or near their CEFR level ({$placementTest->cefr_level?->value}); the lessons listed above have already been filtered to their level plus one level above and one level below.
 
-Create a 4-week roadmap. For each week provide an objective and a list of lesson_ids from the available lessons above that best address the learner's weaknesses while building on their strengths. Order lessons within each week by recommended sequence.";
+Create a 4-week roadmap. Pick exactly 4 lessons for every week (16 lessons in total) and use each lesson at most once across the whole plan. For each week provide an objective and the list of lesson_ids, chosen from the available lessons above, that best address the learner's weaknesses while building on their strengths. Order lessons within each week by recommended sequence.
+
+Return \"lesson_ids\" as a JSON array with exactly 4 integers — one element per lesson id, comma-separated (e.g. [101, 102, 103, 104]). Never merge multiple ids into a single number; one element per id.";
 
         try {
             $agent = new RoadmapGenerationAgent(
@@ -57,9 +67,17 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                 tools: [],
             );
 
-            $response = $agent->prompt($prompt);
+            $response = $agent->prompt($prompt, timeout: 120);
 
             $data = $response->toArray();
+
+            [$data, $repairedGluedIds] = $this->normalizeResponse($data, $lessons->pluck('id')->all());
+
+            if ($repairedGluedIds) {
+                Log::info('GenerateRoadmap repaired glued lesson ids', [
+                    'roadmap_id' => $this->roadmap->id,
+                ]);
+            }
 
             if (! $this->isValidResponse($data)) {
                 Log::error('GenerateRoadmap AI response failed validation', [
@@ -115,14 +133,26 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                 'title' => 'Personalized Roadmap Generated',
                 'message' => 'Your personalized learning roadmap has been generated.',
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('GenerateRoadmap AI generation failed', [
                 'roadmap_id' => $this->roadmap->id,
                 'error' => $e->getMessage(),
             ]);
 
-            $this->roadmap->update(['status' => RoadmapStatus::Failed]);
+            // Let the queue retry transient failures (see $tries/$backoff);
+            // the failed() hook marks the roadmap as failed once attempts run out.
+            throw $e;
         }
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Log::error('GenerateRoadmap AI generation failed after retries', [
+            'roadmap_id' => $this->roadmap->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        $this->roadmap->update(['status' => RoadmapStatus::Failed]);
     }
 
     protected function lessonsForLevel(?string $level): Collection
@@ -151,6 +181,105 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
         $biased = (clone $query)->whereBetween('level', [$minimum, $maximum])->get();
 
         return $biased->isNotEmpty() ? $biased : $lessons;
+    }
+
+    /**
+     * Repair lesson ids the model glued into a single integer (e.g. [332362347377]
+     * instead of [332, 362, 347, 377]). A week's list is only replaced when the
+     * decoded ids consist of real catalog lessons and yield exactly 4 unique ids,
+     * keeping the demo contract intact; anything else is left untouched so the
+     * regular validation still rejects it.
+     *
+     * @return array{0: array<string, mixed>, 1: bool}
+     */
+    protected function normalizeResponse(array $data, array $catalogIds): array
+    {
+        $repaired = false;
+
+        if (! isset($data['weeks']) || ! is_array($data['weeks'])) {
+            return [$data, $repaired];
+        }
+
+        foreach ($data['weeks'] as $index => $week) {
+            if (! isset($week['lesson_ids']) || ! is_array($week['lesson_ids'])) {
+                continue;
+            }
+
+            $decoded = [];
+            $decodable = true;
+
+            foreach ($week['lesson_ids'] as $id) {
+                if (is_int($id) && in_array($id, $catalogIds, true)) {
+                    $decoded[] = $id;
+
+                    continue;
+                }
+
+                if (! is_int($id)) {
+                    $decodable = false;
+
+                    break;
+                }
+
+                $split = $this->splitGluedId((string) $id, $catalogIds);
+
+                if ($split === null) {
+                    $decodable = false;
+
+                    break;
+                }
+
+                array_push($decoded, ...$split);
+            }
+
+            if ($decodable && count($decoded) === 4 && count(array_unique($decoded)) === 4) {
+                $data['weeks'][$index]['lesson_ids'] = $decoded;
+
+                $repaired = true;
+            }
+        }
+
+        return [$data, $repaired];
+    }
+
+    /**
+     * Try to recover the catalog lessons concatenated into a single integer,
+     * e.g. splitGluedId("332362347377") → [332, 362, 347, 377]. Matches the
+     * longest catalog id that prefixes the remaining digits at every step and
+     * returns null when the string cannot be fully consumed by catalog ids.
+     *
+     * @param  array<int, int>  $catalogIds
+     * @return array<int, int>|null
+     */
+    protected function splitGluedId(string $digits, array $catalogIds): ?array
+    {
+        $candidates = array_map('strval', $catalogIds);
+
+        usort($candidates, fn (string $a, string $b) => strlen($b) <=> strlen($a));
+
+        $result = [];
+
+        while ($digits !== '') {
+            $matched = null;
+
+            foreach ($candidates as $candidate) {
+                if (str_starts_with($digits, $candidate)) {
+                    $matched = $candidate;
+
+                    break;
+                }
+            }
+
+            if ($matched === null) {
+                return null;
+            }
+
+            $result[] = (int) $matched;
+
+            $digits = substr($digits, strlen($matched));
+        }
+
+        return $result;
     }
 
     protected function isValidResponse(mixed $data): bool
@@ -193,6 +322,18 @@ Create a 4-week roadmap. For each week provide an objective and a list of lesson
                     return false;
                 }
             }
+
+            // Demo contract (see docs/English Mentor AI.html roadmap screen):
+            // every week is exactly 4 lessons, no repeats across the plan.
+            if (count($week['lesson_ids']) !== 4) {
+                return false;
+            }
+        }
+
+        $allLessonIds = collect($data['weeks'])->pluck('lesson_ids')->flatten();
+
+        if ($allLessonIds->unique()->count() !== $allLessonIds->count()) {
+            return false;
         }
 
         return true;

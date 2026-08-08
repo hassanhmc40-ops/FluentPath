@@ -12,11 +12,11 @@ class PlacementEvaluationAgent extends AnonymousAgent implements HasStructuredOu
     public function schema(JsonSchema $schema): array
     {
         return [
-            'cefr_level' => $schema->string()->enum(array_column(CefrLevel::cases(), 'value')),
-            'writing_score' => $schema->number(),
-            'strengths' => $schema->array()->items($schema->string()),
-            'weaknesses' => $schema->array()->items($schema->string()),
-            'reasoning' => $schema->string(),
+            'cefr_level' => $schema->string()->enum(array_column(CefrLevel::cases(), 'value'))->required(),
+            'writing_score' => $schema->number()->required(),
+            'strengths' => $schema->array()->items($schema->string())->required(),
+            'weaknesses' => $schema->array()->items($schema->string())->required(),
+            'reasoning' => $schema->string()->required(),
         ];
     }
 }

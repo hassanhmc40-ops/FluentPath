@@ -12,10 +12,18 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CorrectWritingSubmission implements ShouldQueue
 {
     use Dispatchable, Queueable, SerializesModels;
+
+    public int $timeout = 300;
+
+    public int $tries = 3;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         public WritingSubmission $writingSubmission,
@@ -41,7 +49,7 @@ Please provide a corrected version, a score (0-100), detailed feedback on gramma
                 tools: [],
             );
 
-            $response = $agent->prompt($prompt);
+            $response = $agent->prompt($prompt, timeout: 120);
 
             $data = $response->toArray();
 
@@ -78,14 +86,26 @@ Please provide a corrected version, a score (0-100), detailed feedback on gramma
                 $this->writingSubmission->user_id,
                 $this->writingSubmission->id,
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('WritingSubmission AI correction failed', [
                 'writing_submission_id' => $this->writingSubmission->id,
                 'error' => $e->getMessage(),
             ]);
 
-            $this->writingSubmission->update(['status' => WritingSubmissionStatus::Failed]);
+            // Let the queue retry transient failures (see $tries/$backoff);
+            // the failed() hook marks the submission as failed once attempts run out.
+            throw $e;
         }
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Log::error('WritingSubmission AI correction failed after retries', [
+            'writing_submission_id' => $this->writingSubmission->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        $this->writingSubmission->update(['status' => WritingSubmissionStatus::Failed]);
     }
 
     protected function isValidResponse(mixed $data): bool

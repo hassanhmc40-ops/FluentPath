@@ -11,14 +11,14 @@ class RoadmapGenerationAgent extends AnonymousAgent implements HasStructuredOutp
     public function schema(JsonSchema $schema): array
     {
         return [
-            'title' => $schema->string(),
+            'title' => $schema->string()->required(),
             'weeks' => $schema->array()->items(
                 $schema->object([
-                    'week_number' => $schema->integer(),
-                    'objective' => $schema->string(),
-                    'lesson_ids' => $schema->array()->items($schema->integer()),
+                    'week_number' => $schema->integer()->required(),
+                    'objective' => $schema->string()->required(),
+                    'lesson_ids' => $schema->array()->items($schema->integer())->required(),
                 ])
-            ),
+            )->required(),
         ];
     }
 }

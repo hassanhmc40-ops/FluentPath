@@ -22,6 +22,12 @@
             <div style="font-size: 13.5px; color: #A6B4AE; margin-top: 10px;">Auto-scoring your multiple choice parts, AI is grading your writing...</div>
             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7E9089; margin-top: 26px;">202 ACCEPTED · job queued · non-blocking</div>
         </div>
+        <script>
+            (function () {
+                // Auto-refresh until the evaluation finishes (this block only renders while processing).
+                setTimeout(function () { window.location.reload(); }, 5000);
+            })();
+        </script>
 
     @elseif ($test && $test->status->value === 'analyzed')
         {{-- Done state --}}
@@ -91,6 +97,57 @@
                     <button type="submit" style="border: 1px solid #E0603B; background: none; color: #A73E1E; border-radius: 999px; padding: 12px 24px; font: inherit; font-size: 13px; cursor: pointer; transition: all .2s;" onmouseover="this.style.background='#E0603B';this.style.color='#FFF6F2'" onmouseout="this.style.background='none';this.style.color='#A73E1E'">Retake test</button>
                 </form>
             </div>
+
+            {{-- Previous results --}}
+            @if ($history->isNotEmpty())
+                <div style="margin-top: 6px;">
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.4px; color: #8A8378; margin-bottom: 14px;">PREVIOUS RESULTS · {{ $history->count() }} {{ Str::plural('ATTEMPT', $history->count()) }}</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        @foreach ($history as $h)
+                            @php
+                                $hScores = [
+                                    'Grammar' => $h->grammar_score !== null ? round((float) $h->grammar_score) : null,
+                                    'Vocabulary' => $h->vocabulary_score !== null ? round((float) $h->vocabulary_score) : null,
+                                    'Reading' => $h->reading_score !== null ? round((float) $h->reading_score) : null,
+                                    'Writing' => $h->writing_score !== null ? round((float) $h->writing_score) : null,
+                                ];
+                            @endphp
+                            <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 20px 24px;">
+                                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                                    <div style="font-size: 13px; color: #6C6A63;">{{ $h->submitted_at?->format('M j, Y') }}</div>
+                                    <div style="background: #17211E; color: #29C39F; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 13px; border-radius: 999px; padding: 5px 12px;">{{ $h->cefr_level?->value ?? '—' }}</div>
+                                    @foreach ($hScores as $name => $score)
+                                        <div style="font-size: 12px; color: #8A8378;">
+                                            {{ $name }} <span style="color: #0E6B5C; font-weight: 700; font-family: 'Bricolage Grotesque', sans-serif;">{{ $score !== null ? $score : '—' }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if (($h->strengths ?? []) || ($h->weaknesses ?? []))
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;">
+                                        @foreach (($h->strengths ?? []) as $s)
+                                            <span style="padding: 4px 10px; border-radius: 999px; background: #E3F2EE; color: #0A5347; font-size: 11.5px;">{{ $s }}</span>
+                                        @endforeach
+                                        @foreach (($h->weaknesses ?? []) as $w)
+                                            <span style="padding: 4px 10px; border-radius: 999px; background: #FBE7DF; color: #A73E1E; font-size: 11.5px;">{{ $w }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+    @elseif ($failed)
+        {{-- Failed state --}}
+        <div style="background: #FFFDFA; border: 1px solid #F3D5C8; border-radius: 20px; padding: 34px; text-align: center; animation: rise .5s both;">
+            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 21px; font-weight: 700; color: #A73E1E;">Evaluation failed</div>
+            <div style="font-size: 14px; color: #6C6A63; margin: 10px auto 0; line-height: 1.6; max-width: 400px;">Something went wrong while grading your submission. Please try again — retaking starts a fresh placement test.</div>
+            <form method="POST" action="/placement-test/retake" style="margin-top: 22px;">
+                @csrf
+                <button type="submit" style="border: 0; border-radius: 999px; padding: 13px 26px; background: #E0603B; color: #FFF6F2; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: transform .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Retake test</button>
+            </form>
         </div>
 
     @else

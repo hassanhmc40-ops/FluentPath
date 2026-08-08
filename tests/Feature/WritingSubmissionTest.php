@@ -235,7 +235,7 @@ describe('correction job', function () {
         expect($submission->fresh()->status)->toBe(WritingSubmissionStatus::Failed);
     });
 
-    it('marks the submission failed when the AI call throws', function () {
+    it('rethrows AI failures for queue retry and marks the submission failed via failed()', function () {
         $user = User::factory()->create();
         $submission = WritingSubmission::factory()->create(['user_id' => $user->id]);
 
@@ -243,7 +243,18 @@ describe('correction job', function () {
             fn () => throw new RuntimeException('Groq is down'),
         ]);
 
-        (new CorrectWritingSubmission($submission))->handle();
+        $job = new CorrectWritingSubmission($submission);
+
+        try {
+            $job->handle();
+            $this->fail('Expected the AI exception to propagate for queue retry.');
+        } catch (RuntimeException $e) {
+            expect($e->getMessage())->toBe('Groq is down');
+        }
+
+        expect($submission->fresh()->status)->toBe(WritingSubmissionStatus::Processing);
+
+        $job->failed(new RuntimeException('Groq is down'));
 
         expect($submission->fresh()->status)->toBe(WritingSubmissionStatus::Failed);
     });
