@@ -133,6 +133,37 @@ php artisan schedule:work
 
 ---
 
+## Docker Setup (alternative to XAMPP)
+
+The repo ships a manual Docker setup (no Laravel Sail): **nginx + PHP 8.3-FPM + MySQL 8**, with a dedicated `queue` service for the queue worker and the task scheduler running inside the app container via supervisord.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build: Node 22 builds the Vite assets, then PHP 8.3-FPM installs Composer deps |
+| `docker-compose.yml` | 4 services: `app` (php-fpm + scheduler), `queue` (queue worker), `nginx` (port **8080**), `mysql` (port **3308** — XAMPP keeps 3306) |
+| `docker/nginx/default.conf` | Nginx config → PHP-FPM |
+| `docker/supervisord.conf` | `php-fpm`, `schedule:work` (the queue worker is the dedicated `queue` service) |
+| `docker/php-entrypoint.sh` | Waits for MySQL, runs `migrate`, seeds only on first boot (empty DB), starts supervisord |
+| `.dockerignore` | Keeps `vendor`, `node_modules`, `.env` out of the image |
+
+### Run it
+
+```bash
+docker compose up -d --build    # build, start, migrate + seed on first boot
+```
+
+- App: `http://localhost:8080` · MySQL host port: `3308` (DB `fluentpath`, user/password `fluentpath`)
+- `GROQ_API_KEY` and `APP_KEY` are read from your repo `.env` automatically.
+- The database is a **fresh seeded copy** (60 lessons, 6 demo accounts) — your XAMPP data is untouched.
+- Code is bind-mounted, so edits reflect instantly; `vendor`, `node_modules` and `public/build` stay inside the image (Linux-built).
+- Logs: `docker compose logs -f app` (or `-f queue` for the queue worker)
+
+> Cleanup: `docker compose down` (keep data) · `docker compose down -v` (also wipe MySQL data and rebuild everything).
+
+---
+
 ## Demo Accounts
 
 All accounts use the password `password`.

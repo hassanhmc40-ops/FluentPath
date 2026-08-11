@@ -1,0 +1,105 @@
+# Shared env for every app-image service (app + queue)
+x-app-env: &app-env
+  APP_ENV: local
+  APP_DEBUG: "true"
+  APP_URL: http://localhost:8000
+  # DB: fresh seeded MySQL inside Docker (host port 3308 — XAMPP keeps 3306)
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: fluentpath
+  DB_USERNAME: fluentpath
+  DB_PASSWORD: fluentpath
+  # All Laravel stores are DB-backed; no Redis needed
+  QUEUE_CONNECTION: database
+  CACHE_STORE: database
+  SESSION_DRIVER: database
+  BROADCAST_CONNECTION: log
+  LOG_CHANNEL: stack
+  # Pulled from the repo .env (compose auto-interpolates it)
+  GROQ_API_KEY: ${GROQ_API_KEY:-}
+  MAIL_MAILER: log
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fluentpath-app:latest
+    container_name: fluentpath-app
+    restart: unless-stopped
+    environment: *app-env
+    volumes:
+      # Live code sync for dev; the three named volumes keep the
+      # Linux-specific artifacts built inside the image
+      - .:/var/www/html
+      - vendor-vol:/var/www/html/vendor
+      - node-vol:/var/www/html/node_modules
+      - build-vol:/var/www/html/public/build
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fluentpath
+
+  queue:
+    # Dedicated queue worker (DB-backed queue). Shares the app image and env.
+    # Runs `queue:work` only — migrations/seeding stay in the app entrypoint.
+    image: fluentpath-app:latest
+    container_name: fluentpath-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=2 --tries=3 --timeout=310
+    environment: *app-env
+    volumes:
+      - .:/var/www/html
+      - vendor-vol:/var/www/html/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fluentpath
+
+  nginx:
+    image: nginx:alpine
+    container_name: fluentpath-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - fluentpath
+
+  mysql:
+    image: mysql:8.0
+    container_name: fluentpath-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: fluentpath
+      MYSQL_USER: fluentpath
+      MYSQL_PASSWORD: fluentpath
+      MYSQL_ROOT_PASSWORD: fluentpath-root
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-vol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - fluentpath
+
+volumes:
+  vendor-vol:
+  node-vol:
+  build-vol:
+  mysql-vol:
+
+networks:
+  fluentpath:
+    driver: bridge
