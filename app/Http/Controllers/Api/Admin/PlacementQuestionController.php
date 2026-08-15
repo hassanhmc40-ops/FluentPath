@@ -13,8 +13,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 /**
  * @group Admin · Placement Questions
  *
- * Admin-only management of the placement-test question bank (25 questions
- * per skill across grammar, vocabulary, reading and writing).
+ * Admin-only management of the placement-test question bank (60 questions:
+ * 19 grammar, 19 vocabulary, 19 reading and 3 writing prompts).
  * Requires an admin bearer token; students receive `403`.
  */
 class PlacementQuestionController extends Controller

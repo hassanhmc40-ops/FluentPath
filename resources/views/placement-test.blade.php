@@ -29,7 +29,7 @@
             })();
         </script>
 
-    @elseif ($test && $test->status->value === 'analyzed')
+    @elseif ($test && $test->status->value === 'analyzed' && ! $retaking)
         {{-- Done state --}}
         @php
             $level = $test->cefr_level?->value ?? '—';

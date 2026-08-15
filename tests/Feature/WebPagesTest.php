@@ -106,7 +106,7 @@ describe('student pages', function () {
         Queue::assertPushed(EvaluatePlacementTest::class);
     });
 
-    it('retakes the placement test: preserves the old test and roadmap and keeps showing the result', function () {
+    it('retakes the placement test: preserves the old test and roadmap and opens the fresh form', function () {
         $test = PlacementTest::factory()->analyzed()->create(['user_id' => $this->user->id]);
         Roadmap::factory()->create([
             'user_id' => $this->user->id,
@@ -116,11 +116,18 @@ describe('student pages', function () {
         $this->get('/placement-test')->assertSee('View my roadmap');
 
         $this->post('/placement-test/retake')
-            ->assertRedirect('/placement-test');
+            ->assertRedirect('/placement-test?retake=1');
 
         $this->assertDatabaseCount('placement_tests', 1);
         $this->assertDatabaseCount('roadmaps', 1);
 
+        // The ?retake=1 flag shows the fresh form instead of the results…
+        $this->get('/placement-test?retake=1')
+            ->assertStatus(200)
+            ->assertSee('Submit placement test')
+            ->assertDontSee('View my roadmap');
+
+        // …while the analyzed result (and its history) remains intact without it.
         $this->get('/placement-test')
             ->assertStatus(200)
             ->assertSee('View my roadmap')

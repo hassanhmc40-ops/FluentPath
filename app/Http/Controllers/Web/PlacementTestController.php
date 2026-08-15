@@ -36,6 +36,9 @@ class PlacementTestController extends Controller
                 PlacementTestStatus::Pending,
                 PlacementTestStatus::Processing,
             ], true),
+            // Transient flag set by the retake flow: show the fresh test form
+            // even though an analyzed test exists (it stays in the history).
+            'retaking' => $request->boolean('retake'),
         ]);
     }
 
@@ -63,13 +66,17 @@ class PlacementTestController extends Controller
             ->latest('id')
             ->first();
 
-        // Analyzed tests (and their roadmaps) are preserved as historical record;
-        // a failed, pending or processing attempt is a dead end — remove it so the
-        // student can submit a fresh test.
-        if ($test && $test->status !== PlacementTestStatus::Analyzed) {
-            $test->delete();
+        // A failed, pending or processing attempt is a dead end — remove it so
+        // the student can submit a fresh test. Analyzed tests (and their
+        // roadmaps) are preserved as historical record.
+        if ($test === null || $test->status !== PlacementTestStatus::Analyzed) {
+            $test?->delete();
+
+            return redirect('/placement-test');
         }
 
-        return redirect('/placement-test');
+        // The latest test is analyzed: keep it as history and open the fresh
+        // test form via the transient ?retake=1 flag.
+        return redirect('/placement-test?retake=1');
     }
 }

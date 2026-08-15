@@ -1164,8 +1164,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
                 <h1 id="admin-placement-questions">Admin · Placement Questions</h1>
 
-    <p>Admin-only management of the placement-test question bank (25 questions
-per skill across grammar, vocabulary, reading and writing).
+    <p>Admin-only management of the placement-test question bank (60 questions:
+19 grammar, 19 vocabulary, 19 reading and 3 writing prompts).
 Requires an admin bearer token; students receive <code>403</code>.</p>
 
                                 <h2 id="admin-placement-questions-GETapi-admin-placement-questions">List all placement questions.</h2>

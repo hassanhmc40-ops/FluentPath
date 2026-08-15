@@ -8,8 +8,8 @@
  * seeder (database/seeders/ContentSeeder.php) depends on this exact contract.
  *
  * Requirement counts (exact):
- *  - placement_questions: 50 (25 vocabulary MCQs + 25 writing free-text;
- *    for EVERY level A1..C1 there are EXACTLY 5 questions per skill).
+ *  - placement_questions: 22 (19 vocabulary MCQs + 3 writing free-text;
+ *    vocabulary: A1 x4, A2 x4, B1 x4, B2 x4, C1 x3; writing: 3 total).
  *  - lessons: 30, keyed "vocabulary-a1-1".."writing-c1-3" — i.e. per skill,
  *    3 lessons per level (suffix 1, 2, 3).
  *  - quizzes: 30, ONE per lesson, using the SAME key as the lesson.
@@ -41,11 +41,9 @@
 return [
 
     'placement_questions' => [
-        // ---- Vocabulary (25 MCQs): A1 x5, A2 x5, B1 x5, B2 x5, C1 x5 ----
+        // ---- Vocabulary (19 MCQs): A1 x4, A2 x4, B1 x4, B2 x4, C1 x3 ----
         ['skill' => 'vocabulary', 'level' => 'A1', 'question' => 'Choose the word that means "a piece of furniture you sit on in a classroom".',
             'option_a' => 'chair', 'option_b' => 'desk', 'option_c' => 'shelf', 'option_d' => 'board', 'correct_answer' => 'a'],
-        ['skill' => 'vocabulary', 'level' => 'A1', 'question' => 'Choose the word for the number that comes after seven.',
-            'option_a' => 'six', 'option_b' => 'eight', 'option_c' => 'nine', 'option_d' => 'ten', 'correct_answer' => 'b'],
         ['skill' => 'vocabulary', 'level' => 'A1', 'question' => 'Choose the word for the colour of a banana.',
             'option_a' => 'red', 'option_b' => 'green', 'option_c' => 'blue', 'option_d' => 'yellow', 'correct_answer' => 'd'],
         ['skill' => 'vocabulary', 'level' => 'A1', 'question' => 'Choose the word for "a thing you use to write on paper".',
@@ -53,8 +51,6 @@ return [
         ['skill' => 'vocabulary', 'level' => 'A1', 'question' => 'Choose the word for "a large vehicle that carries many people on the road".',
             'option_a' => 'car', 'option_b' => 'bus', 'option_c' => 'bike', 'option_d' => 'boat', 'correct_answer' => 'b'],
 
-        ['skill' => 'vocabulary', 'level' => 'A2', 'question' => 'Choose the word for "a place where you buy food, like bread and milk".',
-            'option_a' => 'market', 'option_b' => 'library', 'option_c' => 'station', 'option_d' => 'factory', 'correct_answer' => 'a'],
         ['skill' => 'vocabulary', 'level' => 'A2', 'question' => 'Choose the word for "a journey on a plane".',
             'option_a' => 'flight', 'option_b' => 'ride', 'option_c' => 'cruise', 'option_d' => 'walk', 'correct_answer' => 'a'],
         ['skill' => 'vocabulary', 'level' => 'A2', 'question' => 'Choose the word for "an activity you do in your free time, such as swimming or reading".',
@@ -72,13 +68,9 @@ return [
             'option_a' => 'bored', 'option_b' => 'exhausted', 'option_c' => 'relaxed', 'option_d' => 'nervous', 'correct_answer' => 'b'],
         ['skill' => 'vocabulary', 'level' => 'B1', 'question' => 'Choose the phrasal verb that means "to recover from an illness".',
             'option_a' => 'get up', 'option_b' => 'get over', 'option_c' => 'get along', 'option_d' => 'get away', 'correct_answer' => 'b'],
-        ['skill' => 'vocabulary', 'level' => 'B1', 'question' => 'Choose the word that means "a strong wish to do or have something".',
-            'option_a' => 'ability', 'option_b' => 'habit', 'option_c' => 'desire', 'option_d' => 'duty', 'correct_answer' => 'c'],
 
         ['skill' => 'vocabulary', 'level' => 'B2', 'question' => 'Choose the phrasal verb that means "to postpone or delay something until later".',
             'option_a' => 'put on', 'option_b' => 'put off', 'option_c' => 'put out', 'option_d' => 'put up', 'correct_answer' => 'b'],
-        ['skill' => 'vocabulary', 'level' => 'B2', 'question' => 'Choose the word for "the careful study of a subject to discover new facts".',
-            'option_a' => 'research', 'option_b' => 'repair', 'option_c' => 'return', 'option_d' => 'recovery', 'correct_answer' => 'a'],
         ['skill' => 'vocabulary', 'level' => 'B2', 'question' => 'Choose the word for "the ability to understand and share another person\'s feelings".',
             'option_a' => 'sympathy', 'option_b' => 'empathy', 'option_c' => 'apathy', 'option_d' => 'antipathy', 'correct_answer' => 'b'],
         ['skill' => 'vocabulary', 'level' => 'B2', 'question' => 'Choose the word that means "to examine something very carefully and critically".',
@@ -88,45 +80,15 @@ return [
 
         ['skill' => 'vocabulary', 'level' => 'C1', 'question' => 'Choose the word for "a statement that seems to contradict itself but may be true".',
             'option_a' => 'paradox', 'option_b' => 'prologue', 'option_c' => 'prototype', 'option_d' => 'panorama', 'correct_answer' => 'a'],
-        ['skill' => 'vocabulary', 'level' => 'C1', 'question' => 'Choose the word for "judging the value of something by examining its strengths and weaknesses".',
-            'option_a' => 'estimation', 'option_b' => 'evaluation', 'option_c' => 'expectation', 'option_d' => 'explanation', 'correct_answer' => 'b'],
         ['skill' => 'vocabulary', 'level' => 'C1', 'question' => 'Choose the word for "the natural combination of words, such as make a decision or heavy rain".',
             'option_a' => 'combination', 'option_b' => 'collection', 'option_c' => 'collocation', 'option_d' => 'connection', 'correct_answer' => 'c'],
         ['skill' => 'vocabulary', 'level' => 'C1', 'question' => 'Choose the word that means "a slight but important difference in meaning or expression".',
             'option_a' => 'nuance', 'option_b' => 'nuisance', 'option_c' => 'nurture', 'option_d' => 'nonsense', 'correct_answer' => 'a'],
-        ['skill' => 'vocabulary', 'level' => 'C1', 'question' => 'Choose the word that means "to state something firmly and confidently as a fact".',
-            'option_a' => 'assume', 'option_b' => 'aspire', 'option_c' => 'assert', 'option_d' => 'assure', 'correct_answer' => 'c'],
 
-        // ---- Writing (25 prompts): A1 x5, A2 x5, B1 x5, B2 x5, C1 x5 ----
-        ['skill' => 'writing', 'level' => 'A1', 'question' => 'Write 1-2 sentences to introduce yourself. Say your name, your age and where you live.'],
-        ['skill' => 'writing', 'level' => 'A1', 'question' => 'Write 1-2 sentences about your family. Who is in your family?'],
-        ['skill' => 'writing', 'level' => 'A1', 'question' => 'Write 1-2 sentences about your breakfast. What do you eat in the morning?'],
-        ['skill' => 'writing', 'level' => 'A1', 'question' => 'Write 1-2 sentences about your best friend. What is their name and what do you like doing together?'],
-        ['skill' => 'writing', 'level' => 'A1', 'question' => 'Write 1-2 sentences about what you can see from your window right now.'],
-
+        // ---- Writing (3 prompts): 1 beginner, 1 intermediate, 1 advanced ----
         ['skill' => 'writing', 'level' => 'A2', 'question' => 'Write 2-3 sentences about your daily routine. When do you get up, and what do you do in the evening?'],
-        ['skill' => 'writing', 'level' => 'A2', 'question' => 'Write 2-3 sentences about a place you visited. Where did you go, and why did you like it?'],
-        ['skill' => 'writing', 'level' => 'A2', 'question' => 'Write 2-3 sentences about your favourite hobby. When do you do it, and why do you enjoy it?'],
-        ['skill' => 'writing', 'level' => 'A2', 'question' => 'Write 2-3 sentences about a meal you cooked or ate recently. What did you eat and who was with you?'],
-        ['skill' => 'writing', 'level' => 'A2', 'question' => 'Write 2-3 sentences about the weather in your city. What is the weather like today and what is your favourite season?'],
-
-        ['skill' => 'writing', 'level' => 'B1', 'question' => 'Write 3-4 sentences giving your opinion about learning English online. Use "in my opinion" or "however".'],
-        ['skill' => 'writing', 'level' => 'B1', 'question' => 'Write 3-4 sentences about the advantages of regular exercise for your health. Use at least one linking word.'],
-        ['skill' => 'writing', 'level' => 'B1', 'question' => 'Write 3-4 sentences about your plans for the future. What job would you like, and why?'],
         ['skill' => 'writing', 'level' => 'B1', 'question' => 'Write 3-4 sentences comparing life in a big city and a small town. Which do you prefer and why?'],
-        ['skill' => 'writing', 'level' => 'B1', 'question' => 'Write 3-4 sentences about a skill you would like to learn. Why is it useful and how would you learn it?'],
-
-        ['skill' => 'writing', 'level' => 'B2', 'question' => 'Write 4-5 sentences arguing for or against working from home. Hedge your claims with phrases such as "it could be argued".'],
-        ['skill' => 'writing', 'level' => 'B2', 'question' => 'Write 4-5 sentences about the impact of social media on young people. Present both sides of the argument.'],
-        ['skill' => 'writing', 'level' => 'B2', 'question' => 'Write 4-5 sentences about whether a university education is worth the cost. Use formal register and hedging.'],
-        ['skill' => 'writing', 'level' => 'B2', 'question' => 'Write 4-5 sentences discussing whether fast fashion should be banned. Use hedging and present both sides.'],
-        ['skill' => 'writing', 'level' => 'B2', 'question' => 'Write 4-5 sentences about the effects of artificial intelligence on the job market. Use formal register and at least one discourse marker.'],
-
-        ['skill' => 'writing', 'level' => 'C1', 'question' => 'Write 5-6 sentences evaluating the role of artificial intelligence in education. Use discourse markers such as "furthermore" and "nevertheless".'],
-        ['skill' => 'writing', 'level' => 'C1', 'question' => 'Write 5-6 sentences discussing the extent to which urban life has become unsustainable. Hedge your claims and use precise vocabulary.'],
-        ['skill' => 'writing', 'level' => 'C1', 'question' => 'Write 5-6 sentences reflecting on the value of learning a foreign language in a globalised world. Use concession and stance markers.'],
         ['skill' => 'writing', 'level' => 'C1', 'question' => 'Write 5-6 sentences critically evaluating the claim that technology has made people less connected. Use precise collocations and hedging.'],
-        ['skill' => 'writing', 'level' => 'C1', 'question' => 'Write 5-6 sentences arguing whether governments should prioritise economic growth over environmental protection. Use discourse markers and nuanced language.'],
     ],
 
     'lessons' => [

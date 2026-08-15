@@ -120,16 +120,16 @@ describe('submission', function () {
         Queue::assertNotPushed(EvaluatePlacementTest::class);
     });
 
-    it('accepts a full 100-question submission (cap raised to 150)', function () {
+    it('accepts a full 60-question submission (cap raised to 150)', function () {
         Queue::fake();
 
         Sanctum::actingAs(User::factory()->create());
 
         $questions = collect()
-            ->merge(PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create())
-            ->merge(PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create())
-            ->merge(PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create())
-            ->merge(PlacementQuestion::factory()->count(25)->writing()->create());
+            ->merge(PlacementQuestion::factory()->count(19)->grammar()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(19)->vocabulary()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(19)->reading()->multipleChoice()->create())
+            ->merge(PlacementQuestion::factory()->count(3)->writing()->create());
 
         $this->postJson('/api/placement-tests', [
             'answers' => $questions->map(fn ($q) => [
@@ -138,7 +138,7 @@ describe('submission', function () {
             ])->all(),
         ])->assertStatus(202);
 
-        $this->assertDatabaseCount('placement_answers', 100);
+        $this->assertDatabaseCount('placement_answers', 60);
 
         Queue::assertPushed(EvaluatePlacementTest::class);
     });
@@ -196,10 +196,10 @@ describe('submission', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
-        $vocabularyQuestions = PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
-        $readingQuestions = PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
-        $writingQuestions = PlacementQuestion::factory()->count(25)->writing()->create();
+        $grammarQuestions = PlacementQuestion::factory()->count(19)->grammar()->multipleChoice()->create();
+        $vocabularyQuestions = PlacementQuestion::factory()->count(19)->vocabulary()->multipleChoice()->create();
+        $readingQuestions = PlacementQuestion::factory()->count(19)->reading()->multipleChoice()->create();
+        $writingQuestions = PlacementQuestion::factory()->count(3)->writing()->create();
 
         $answers = collect()
             ->push([
@@ -469,10 +469,10 @@ describe('evaluation job', function () {
     it('counts skipped questions as incorrect over the catalog total', function () {
         $user = User::factory()->create();
 
-        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
-        PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
-        PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
-        PlacementQuestion::factory()->count(25)->writing()->create();
+        $grammarQuestions = PlacementQuestion::factory()->count(19)->grammar()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(19)->vocabulary()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(19)->reading()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(3)->writing()->create();
 
         $test = PlacementTest::factory()->create(['user_id' => $user->id]);
 
@@ -490,7 +490,7 @@ describe('evaluation job', function () {
 
         $test->refresh();
 
-        expect($test->grammar_score)->toBe('4.00')
+        expect($test->grammar_score)->toBe('5.26')
             ->and($test->vocabulary_score)->toBe('0.00')
             ->and($test->reading_score)->toBe('0.00')
             ->and($test->writing_score)->toBe('70.00')
@@ -500,10 +500,10 @@ describe('evaluation job', function () {
     it('reports answered/skipped counts and whole-part skips in the prompt', function () {
         $user = User::factory()->create();
 
-        $grammarQuestions = PlacementQuestion::factory()->count(25)->grammar()->multipleChoice()->create();
-        PlacementQuestion::factory()->count(25)->vocabulary()->multipleChoice()->create();
-        PlacementQuestion::factory()->count(25)->reading()->multipleChoice()->create();
-        $writingQuestions = PlacementQuestion::factory()->count(25)->writing()->create();
+        $grammarQuestions = PlacementQuestion::factory()->count(19)->grammar()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(19)->vocabulary()->multipleChoice()->create();
+        PlacementQuestion::factory()->count(19)->reading()->multipleChoice()->create();
+        $writingQuestions = PlacementQuestion::factory()->count(3)->writing()->create();
 
         $test = PlacementTest::factory()->create(['user_id' => $user->id]);
 
@@ -533,9 +533,9 @@ describe('evaluation job', function () {
 
         AI::assertAgentWasPrompted(
             PlacementEvaluationAgent::class,
-            fn ($prompt) => $prompt->contains('Grammar score: 4 (2/25 answered, 23 skipped)')
+            fn ($prompt) => $prompt->contains('Grammar score: 5.26 (2/19 answered, 17 skipped)')
                 && $prompt->contains('the learner skipped the whole part')
-                && $prompt->contains('Writing answers (1 of 25 prompts answered')
+                && $prompt->contains('Writing answers (1 of 3 prompts answered')
                 && $prompt->contains('Auto-scored')
         );
     });

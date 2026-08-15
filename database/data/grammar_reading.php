@@ -3,11 +3,9 @@
 return [
 
     'placement_questions' => [
-        // ---- Grammar (25 MCQs): A1 x5, A2 x5, B1 x5, B2 x5, C1 x5 ----
+        // ---- Grammar (19 MCQs): A1 x4, A2 x4, B1 x4, B2 x4, C1 x3 ----
         ['skill' => 'grammar', 'level' => 'A1', 'question' => 'Complete the sentence: "She ___ a teacher."',
             'option_a' => 'is', 'option_b' => 'am', 'option_c' => 'are', 'option_d' => 'be', 'correct_answer' => 'a'],
-        ['skill' => 'grammar', 'level' => 'A1', 'question' => 'Fill in the blank: "I ___ two cats at home."',
-            'option_a' => 'have', 'option_b' => 'has', 'option_c' => 'had', 'option_d' => 'am', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'A1', 'question' => 'Complete: "They ___ football every Saturday."',
             'option_a' => 'play', 'option_b' => 'plays', 'option_c' => 'playing', 'option_d' => 'played', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'A1', 'question' => 'Complete: "My sister ___ a new red bike."',
@@ -19,8 +17,6 @@ return [
             'option_a' => 'went', 'option_b' => 'goed', 'option_c' => 'gone', 'option_d' => 'go', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'A2', 'question' => 'Fill in: "We ___ going to the cinema tonight."',
             'option_a' => 'are', 'option_b' => 'is', 'option_c' => 'am', 'option_d' => 'be', 'correct_answer' => 'a'],
-        ['skill' => 'grammar', 'level' => 'A2', 'question' => 'Complete: "A dog is ___ than a cat."',
-            'option_a' => 'bigger', 'option_b' => 'more big', 'option_c' => 'biggest', 'option_d' => 'big', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'A2', 'question' => 'Complete: "She ___ her homework last night."',
             'option_a' => 'did', 'option_b' => 'do', 'option_c' => 'done', 'option_d' => 'does', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'A2', 'question' => 'Complete: "This book is ___ than that one."',
@@ -30,15 +26,11 @@ return [
             'option_a' => 'since', 'option_b' => 'for', 'option_c' => 'during', 'option_d' => 'from', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'B1', 'question' => 'Fill in: "If it rains tomorrow, I ___ take an umbrella."',
             'option_a' => 'will', 'option_b' => 'would', 'option_c' => 'takes', 'option_d' => 'will to', 'correct_answer' => 'a'],
-        ['skill' => 'grammar', 'level' => 'B1', 'question' => 'Complete: "You ___ wear a helmet when you cycle."',
-            'option_a' => 'should', 'option_b' => 'must to', 'option_c' => 'ought', 'option_d' => 'should to', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'B1', 'question' => 'Complete: "She has ___ to Italy three times."',
             'option_a' => 'been', 'option_b' => 'gone', 'option_c' => 'went', 'option_d' => 'being', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'B1', 'question' => 'Complete: "You ___ finish your homework before you go out."',
             'option_a' => 'have to', 'option_b' => 'has to', 'option_c' => 'having to', 'option_d' => 'have', 'correct_answer' => 'a'],
 
-        ['skill' => 'grammar', 'level' => 'B2', 'question' => 'Rewrite in the passive voice: "The chef prepared the meal." → "The meal ___ by the chef."',
-            'option_a' => 'was prepared', 'option_b' => 'is prepared', 'option_c' => 'prepared', 'option_d' => 'was preparing', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'B2', 'question' => 'Complete: "She told me that she ___ the letter the day before."',
             'option_a' => 'had posted', 'option_b' => 'has posted', 'option_c' => 'posts', 'option_d' => 'was posting', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'B2', 'question' => 'Fill in: "If I were you, I ___ accept the offer."',
@@ -52,14 +44,10 @@ return [
             'option_a' => 'had I seen', 'option_b' => 'I had seen', 'option_c' => 'have I seen', 'option_d' => 'did I see', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'C1', 'question' => 'Complete using a cleft sentence: "It was the manager ___ made the final decision."',
             'option_a' => 'who', 'option_b' => 'which', 'option_c' => 'whom', 'option_d' => 'whose', 'correct_answer' => 'a'],
-        ['skill' => 'grammar', 'level' => 'C1', 'question' => 'Fill in: "The ___ of the new policy caused considerable debate."',
-            'option_a' => 'implementation', 'option_b' => 'implement', 'option_c' => 'implementing', 'option_d' => 'implemented', 'correct_answer' => 'a'],
         ['skill' => 'grammar', 'level' => 'C1', 'question' => 'Rewrite beginning with "Not only": "She speaks French and writes articles." → "Not only ___ French, but she also writes articles."',
             'option_a' => 'does she speak', 'option_b' => 'she speaks', 'option_c' => 'speaks she', 'option_d' => 'she does speak', 'correct_answer' => 'a'],
-        ['skill' => 'grammar', 'level' => 'C1', 'question' => 'Complete using a cleft sentence: "___ I need is more time."',
-            'option_a' => 'What', 'option_b' => 'That', 'option_c' => 'Which', 'option_d' => 'It', 'correct_answer' => 'a'],
 
-        // ---- Reading (25 MCQs): A1 x5, A2 x5, B1 x5, B2 x5, C1 x5 ----
+        // ---- Reading (19 MCQs): A1 x4, A2 x4, B1 x4, B2 x4, C1 x3 ----
         ['skill' => 'reading', 'level' => 'A1', 'question' => "Read the text. Then answer the question below.\n\nMaria wakes up at seven o'clock every morning. She has a shower and gets dressed. She eats breakfast at half past seven. Then she walks to school.\n\nWhat time does Maria eat breakfast?",
             'option_a' => 'Half past seven', 'option_b' => 'Seven o\'clock', 'option_c' => 'Eight o\'clock', 'option_d' => 'Half past eight', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'A1', 'question' => "Read the text. Then answer the question below.\n\nThis is the Green family. Mr Green is a doctor. Mrs Green is a teacher. They have two children: Tom is eight and Lily is five. Tom likes dinosaurs. Lily likes cats.\n\nHow many children do Mr and Mrs Green have?",
@@ -68,8 +56,6 @@ return [
             'option_a' => 'Blue', 'option_b' => 'Green', 'option_c' => 'Red', 'option_d' => 'Yellow', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'A1', 'question' => "Read the text. Then answer the question below.\n\nTom has a dog. The dog is black and white. Tom takes the dog for a walk every morning.\n\nWhat colour is Tom's dog?",
             'option_a' => 'Black and white', 'option_b' => 'Black', 'option_c' => 'White', 'option_d' => 'Brown', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'A1', 'question' => "Read the text. Then answer the question below.\n\nSara is seven years old. She lives in a flat with her mother and her brother. Her brother is four years old. Her favourite toy is a red ball.\n\nHow old is Sara's brother?",
-            'option_a' => 'Four', 'option_b' => 'Seven', 'option_c' => 'Two', 'option_d' => 'Ten', 'correct_answer' => 'a'],
 
         ['skill' => 'reading', 'level' => 'A2', 'question' => "Read the text. Then answer the question below.\n\nLast summer, my family went to Cornwall for a week. On Monday we visited the beach. On Tuesday we went to a fish restaurant. On Wednesday we walked along the coast path. It rained on Thursday, so we stayed inside and played board games.\n\nWhat did the family do on Wednesday?",
             'option_a' => 'They walked along the coast path', 'option_b' => 'They visited the beach', 'option_c' => 'They went to a fish restaurant', 'option_d' => 'They stayed inside and played board games', 'correct_answer' => 'a'],
@@ -77,15 +63,11 @@ return [
             'option_a' => 'Forty minutes', 'option_b' => 'Ninety minutes', 'option_c' => 'Fifteen minutes', 'option_d' => 'An hour', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'A2', 'question' => "Read the text. Then answer the question below.\n\nEmma is looking for a birthday present for her mother. She wants to buy something useful. She is thinking about a new scarf or perhaps a cookbook. Her mother enjoys cooking Italian food.\n\nWhat is Emma going to buy for her mother?",
             'option_a' => 'A cookbook', 'option_b' => 'A scarf', 'option_c' => 'Some flowers', 'option_d' => 'Nothing, because she has not decided', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'A2', 'question' => "Read the text. Then answer the question below.\n\nYesterday was Ben's birthday. He was twelve years old. His grandmother gave him a new phone. In the evening, his friends came to his house and they ate pizza and cake.\n\nWhat did Ben's grandmother give him?",
-            'option_a' => 'A new phone', 'option_b' => 'A pizza', 'option_c' => 'A cake', 'option_d' => 'A bike', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'A2', 'question' => "Read the text. Then answer the question below.\n\nLaura usually cycles to work because it is faster than the bus. Today it is raining, so she decides to take the bus instead.\n\nWhy does Laura take the bus today?",
             'option_a' => 'Because it is raining', 'option_b' => 'Because the bus is faster', 'option_c' => 'Because her bike is broken', 'option_d' => 'Because she is late', 'correct_answer' => 'a'],
 
         ['skill' => 'reading', 'level' => 'B1', 'question' => "Read the text. Then answer the question below.\n\nMany people spend several hours a day on social media. While these platforms help us stay in touch with friends, studies suggest that excessive use can increase feelings of loneliness and anxiety. The writer argues that people should set strict daily limits on their screen time.\n\nWhat is the writer's main concern about social media?",
             'option_a' => 'Excessive use can increase feelings of loneliness and anxiety', 'option_b' => 'Social media helps people stay in touch with friends', 'option_c' => 'People should spend more time on social media', 'option_d' => 'Social media platforms are too expensive', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'B1', 'question' => "Read the text. Then answer the question below.\n\nThe Little Bean Cafe opened in 2018 in a quiet part of Bristol. Since then, it has become a popular meeting place for students and locals. The owner, Priya, says the cafe has served over fifty thousand customers. She plans to open a second branch next year.\n\nHow long has the cafe been open?",
-            'option_a' => 'Since 2018', 'option_b' => 'Since 2020', 'option_c' => 'For fifty years', 'option_d' => 'Since last year', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'B1', 'question' => "Read the text. Then answer the question below.\n\nVolunteering at a local charity can improve your mental health and help you develop new skills. It also allows you to meet people from different backgrounds. The writer suggests that even one hour a week can make a real difference to your community.\n\nWhat does the writer suggest people should do?",
             'option_a' => 'Volunteer for at least an hour a week at a local charity', 'option_b' => 'Donate money to charity every week', 'option_c' => 'Spend more time on social media', 'option_d' => 'Avoid meeting people from different backgrounds', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'B1', 'question' => "Read the text. Then answer the question below.\n\nMany students say that homework takes up too much of their free time. Some teachers agree and argue that schools should set less homework. Others believe that homework is necessary for practising what you learn in class.\n\nWhat do some teachers argue?",
@@ -95,8 +77,6 @@ return [
 
         ['skill' => 'reading', 'level' => 'B2', 'question' => "Read the text. Then answer the question below.\n\nUrbanisation has transformed societies across the globe. While cities offer employment and cultural opportunities, rapid growth often leads to overcrowded housing, inadequate public transport, and rising pollution levels. The author cites the example of Lagos, where the population has tripled in thirty years, straining infrastructure beyond capacity.\n\nWhat evidence does the writer provide to support their claim?",
             'option_a' => 'The population of Lagos has tripled in thirty years', 'option_b' => 'Employment opportunities have doubled in cities', 'option_c' => 'Pollution levels have fallen sharply', 'option_d' => 'Public transport has improved in most cities', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'B2', 'question' => "Read the text. Then answer the question below.\n\nArtificial intelligence promises to revolutionise healthcare, yet it raises significant ethical questions. Algorithms trained on biased data may produce discriminatory diagnoses. Furthermore, patients may feel uncomfortable being treated by machines rather than human doctors. The text highlights a tension between efficiency and the need for human oversight.\n\nWhat is the main disadvantage of AI in healthcare described in the text?",
-            'option_a' => 'Algorithms trained on biased data may produce discriminatory diagnoses', 'option_b' => 'It is too expensive for most hospitals', 'option_c' => 'Patients refuse all machine-based treatment', 'option_d' => 'It reduces the need for human oversight', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'B2', 'question' => "Read the text. Then answer the question below.\n\nIn formal writing, authors tend to use hedging language to soften their claims. Expressions such as 'it could be argued' or 'the evidence suggests' signal that the writer is not making an absolute statement. This cautious approach is considered more appropriate in academic contexts than direct assertions.\n\nWhat does the author argue about formal writing conventions?",
             'option_a' => 'Hedging language is more appropriate in academic contexts than direct assertions', 'option_b' => 'Direct assertions are always preferred in formal writing', 'option_c' => 'Academic writing should avoid all modal verbs', 'option_d' => 'Formal writing should never soften claims', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'B2', 'question' => "Read the text. Then answer the question below.\n\nRemote working has become increasingly common since the pandemic. While employees value the flexibility it offers, managers worry that productivity suffers without direct supervision. Studies, however, show that output often increases when workers control their own schedules, provided that clear targets are set.\n\nWhat do the studies suggest about remote working?",
@@ -108,10 +88,6 @@ return [
             'option_a' => 'It remains influential, although critics question how it works in practice', 'option_b' => 'It is completely correct and never questioned', 'option_c' => 'It has been abandoned by all scientists', 'option_d' => 'It is only useful for historical research', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'C1', 'question' => "Read the text. Then answer the question below.\n\nResearch into bilingualism has yielded compelling evidence that managing two linguistic systems enhances executive function. Nevertheless, the extent of these cognitive advantages remains contested. Some longitudinal studies report modest effects that diminish over time, suggesting that earlier findings may have overstated the benefits.\n\nWhat does the evidence suggest about the cognitive benefits of bilingualism?",
             'option_a' => 'They may be more modest than earlier findings claimed', 'option_b' => 'They are large and permanent', 'option_c' => 'They disappear completely in adulthood', 'option_d' => 'They have never been studied', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'C1', 'question' => "Read the text. Then answer the question below.\n\nWhile the democratisation of knowledge through open-access publishing is widely celebrated, it simultaneously poses challenges for scholarly quality control. The sheer volume of publications makes rigorous peer review increasingly difficult, and predatory journals exploit the system by charging fees without providing adequate editorial scrutiny.\n\nHow does the author qualify the central claim about open-access publishing?",
-            'option_a' => 'By noting that it poses challenges for scholarly quality control', 'option_b' => 'By arguing that it has no disadvantages', 'option_c' => 'By claiming that peer review is unnecessary', 'option_d' => 'By suggesting that only paid journals are reliable', 'correct_answer' => 'a'],
-        ['skill' => 'reading', 'level' => 'C1', 'question' => "Read the text. Then answer the question below.\n\nWhile the gig economy offers workers flexibility and autonomy, critics contend that it erodes traditional employment protections. The classification of workers as independent contractors, rather than employees, exempts companies from obligations such as minimum wage guarantees and health insurance. This tension between flexibility and security remains largely unresolved.\n\nAccording to the text, why are gig-economy workers often denied employment protections?",
-            'option_a' => 'Because they are classified as independent contractors rather than employees', 'option_b' => 'Because they refuse to accept minimum wage', 'option_c' => 'Because they work for several companies at once', 'option_d' => 'Because governments have banned employment contracts', 'correct_answer' => 'a'],
         ['skill' => 'reading', 'level' => 'C1', 'question' => "Read the text. Then answer the question below.\n\nThe notion that technological progress inevitably leads to societal improvement is increasingly questioned by historians. They point out that innovations such as the printing press and the internet produced both liberation and disruption, and that the benefits of new technologies are rarely distributed evenly across populations.\n\nHow does the writer view the relationship between technological progress and societal improvement?",
             'option_a' => 'As not necessarily beneficial, since the benefits are rarely distributed evenly', 'option_b' => 'As always beneficial and liberating', 'option_c' => 'As harmful to every section of society', 'option_d' => 'As irrelevant to the work of historians', 'correct_answer' => 'a'],
 
