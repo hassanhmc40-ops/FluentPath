@@ -29,7 +29,7 @@
 
 <div style="display: flex; flex-direction: column; gap: 20px; animation: fadein .4s both;">
 
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+    <div class="fp-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         @foreach ($statCards as $s)
             <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 22px; animation: rise .5s {{ $s['delay'] }}s both; transition: transform .25s, box-shadow .25s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 34px rgba(23,33,30,.09)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                 <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8378;">{{ $s['label'] }}</div>
@@ -39,7 +39,7 @@
         @endforeach
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 26px; animation: rise .5s .2s both;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700;">Queue monitor</div>

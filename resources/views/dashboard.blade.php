@@ -38,14 +38,14 @@
         @endphp
 
         {{-- Hero card --}}
-        <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;">
+        <div class="fp-hero-grid" style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;">
             <div style="background: #17211E; color: #EFEAE2; border-radius: 22px; padding: 30px; position: relative; overflow: hidden; animation: rise .55s both cubic-bezier(.2,.9,.2,1);">
                 <div style="position: absolute; right: -70px; top: -70px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(41,195,159,.35), transparent 70%); animation: drift 16s ease-in-out infinite;"></div>
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; position: relative;">
                     <div>
                         <div style="font-size: 10.5px; letter-spacing: 1.7px; text-transform: uppercase; color: #7E9089;">Current level</div>
                         @if ($level)
-                            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; line-height: .95; letter-spacing: -3px; margin: 8px 0 6px;">{{ $level }}</div>
+                            <div class="fp-hero-level-text" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; line-height: .95; letter-spacing: -3px; margin: 8px 0 6px;">{{ $level }}</div>
                             <div style="font-size: 13.5px; color: #A6B4AE; max-width: 300px; line-height: 1.55;">
                                 @if ($weekNum)
                                     Continue week {{ $weekNum }}.
@@ -59,7 +59,7 @@
                                 <a href="/roadmap" style="display: inline-block; margin-top: 20px; border: 0; border-radius: 999px; padding: 12px 22px; background: #29C39F; color: #06231D; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .2s, box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 26px rgba(41,195,159,.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">View roadmap →</a>
                             @endif
                         @else
-                            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; line-height: .95; letter-spacing: -3px; margin: 8px 0 6px; color: #7E9089;">—</div>
+                            <div class="fp-hero-level-text" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; line-height: .95; letter-spacing: -3px; margin: 8px 0 6px; color: #7E9089;">—</div>
                             <div style="font-size: 13.5px; color: #A6B4AE; max-width: 300px; line-height: 1.55;">No level set yet. Take the placement test to get started.</div>
                             <a href="/placement-test" style="display: inline-block; margin-top: 20px; border: 0; border-radius: 999px; padding: 12px 22px; background: #29C39F; color: #06231D; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .2s, box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 26px rgba(41,195,159,.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">Take the placement test →</a>
                         @endif
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 19px; animation: rise .55s .05s both cubic-bezier(.2,.9,.2,1); transition: transform .25s, box-shadow .25s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 34px rgba(23,33,30,.09)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                     <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8378;">Lessons done</div>
                     <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -1.2px; margin: 7px 0 4px; color: #17211E;">{{ $lessonsCompleted }}/{{ $lessonsTotal }}</div>
@@ -111,7 +111,7 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;">
+        <div class="fp-hero-grid" style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;">
             {{-- Writing score history --}}
             <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 26px; animation: rise .55s .2s both cubic-bezier(.2,.9,.2,1);">
                 <div style="display: flex; align-items: baseline; justify-content: space-between;">

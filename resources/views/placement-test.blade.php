@@ -41,7 +41,7 @@
         @endphp
         <div style="display: flex; flex-direction: column; gap: 18px; animation: rise .5s both;">
             {{-- Level card --}}
-            <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 30px; display: flex; gap: 30px; align-items: center;">
+            <div class="fp-placement-level-card" style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 30px; display: flex; gap: 30px; align-items: center;">
                 <div style="text-align: center;">
                     <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 62px; font-weight: 800; letter-spacing: -2.5px; color: #0E6B5C; line-height: 1;">{{ $level }}</div>
                     <div style="font-size: 10.5px; letter-spacing: 1.6px; text-transform: uppercase; color: #8A8378; margin-top: 5px;">CEFR level</div>
@@ -52,7 +52,7 @@
             </div>
 
             {{-- Per-skill scores --}}
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+            <div class="fp-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
                     @foreach ([
                         ['name' => 'Grammar', 'score' => $grammarScore, 'color' => '#0E6B5C'],
                         ['name' => 'Vocabulary', 'score' => $vocabScore, 'color' => '#17211E'],
@@ -67,7 +67,7 @@
             </div>
 
             {{-- Strengths / Weaknesses --}}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+            <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
                 <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 18px; padding: 24px;">
                     <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #0E6B5C;">Strengths</div>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
@@ -164,13 +164,13 @@
         @endphp
 
         {{-- Hero intro card --}}
-        <div style="background: #17211E; color: #EFEAE2; border-radius: 22px; padding: 40px; position: relative; overflow: hidden; animation: rise .5s both cubic-bezier(.2,.9,.2,1);">
+        <div class="fp-placement-hero" style="background: #17211E; color: #EFEAE2; border-radius: 22px; padding: 40px; position: relative; overflow: hidden; animation: rise .5s both cubic-bezier(.2,.9,.2,1);">
             <div style="position: absolute; right: -80px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(41,195,159,.3), transparent 70%); animation: drift 15s ease-in-out infinite;"></div>
             <div style="position: relative;">
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.4px; color: #29C39F;">FIRST-TIME DIAGNOSTIC · REQUIRED ONCE</div>
-                <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 38px; font-weight: 800; letter-spacing: -1.4px; line-height: 1.1; margin: 12px 0 10px; max-width: 520px; text-wrap: pretty;">Before anything else, we measure each part separately.</div>
+                <div class="fp-placement-hero-text" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 38px; font-weight: 800; letter-spacing: -1.4px; line-height: 1.1; margin: 12px 0 10px; max-width: 520px; text-wrap: pretty;">Before anything else, we measure each part separately.</div>
                 <div style="font-size: 14.5px; color: #A6B4AE; line-height: 1.65; max-width: 520px;">Four parts, taken in order. Grammar, vocabulary and reading are multiple choice and scored automatically; the AI grades your writing the way a teacher would, then sets your CEFR level and builds the roadmap. Skip any question you don't know — it simply counts as incorrect.</div>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 28px 0 30px;">
+                <div class="fp-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 28px 0 30px;">
                     @foreach ($partMeta as $n => $meta)
                         <div style="background: #202D29; border: 1px solid #2C3A35; border-radius: 15px; padding: 18px; animation: rise .5s {{ 0.1 + ($loop->index * 0.07) }}s both;">
                             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #61726C;">PART {{ $n }}</div>

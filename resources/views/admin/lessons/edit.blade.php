@@ -22,7 +22,7 @@
             @method('PUT')
             <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700;">Edit lesson</div>
 
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-top: 22px;">
+            <div class="fp-form-grid-3" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-top: 22px;">
                 <label style="display: block;">
                     <span style="display: block; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #7E9089; margin-bottom: 7px;">Title</span>
                     <input name="title" value="{{ old('title', $lesson->title) }}" required placeholder="e.g. Reported speech in the past" style="width: 100%; border: 1px solid #2C3A35; border-radius: 11px; padding: 12px 14px; font-size: 14px; background: #202D29; color: #EFEAE2; outline: none;" onfocus="this.style.borderColor='#29C39F'" onblur="this.style.borderColor='#2C3A35'">

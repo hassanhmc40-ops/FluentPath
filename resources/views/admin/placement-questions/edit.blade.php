@@ -30,7 +30,7 @@
                 @enderror
             </label>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+            <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
                 <label style="display: block;">
                     <span style="display: block; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #7E9089; margin-bottom: 7px;">Skill</span>
                     <select name="skill" required style="width: 100%; border: 1px solid #2C3A35; border-radius: 11px; padding: 12px 14px; font-size: 14px; background: #202D29; color: #EFEAE2; outline: none; cursor: pointer;" onfocus="this.style.borderColor='#29C39F'" onblur="this.style.borderColor='#2C3A35'">
@@ -57,7 +57,7 @@
 
             <div id="mcq-fields" style="margin-top: 20px; display: none;">
                 <div style="font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #7E9089; margin-bottom: 10px;">Answer options (multiple choice)</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     @foreach (['a' => 'Option A', 'b' => 'Option B', 'c' => 'Option C', 'd' => 'Option D'] as $letter => $label)
                         <label style="display: block;">
                             <span style="display: block; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #7E9089; margin-bottom: 6px;">{{ $label }}</span>

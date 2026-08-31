@@ -63,7 +63,7 @@
     };
 @endphp
 
-<div style="display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; animation: fadein .4s both;">
+<div class="fp-lesson-layout" style="display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; animation: fadein .4s both;">
     <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 32px; animation: rise .5s both;">
         <a href="/lessons" style="border: 0; background: none; font: inherit; font-size: 12.5px; color: #8A8378; cursor: pointer; padding: 0; display: inline-block;">← Back to lessons</a>
 
@@ -73,7 +73,7 @@
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8378;">{{ $level }}</span>
         </div>
 
-        <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -.8px; line-height: 1.15;">{{ $lesson->title }}</div>
+        <div class="fp-lesson-title" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -.8px; line-height: 1.15;">{{ $lesson->title }}</div>
 
         <div style="display: flex; gap: 8px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8378; margin-top: 10px;">
             <span>{{ ucfirst($skill) }} lesson</span>

@@ -28,10 +28,10 @@
             $action = $state === 'ok' ? 'View' : ($state === 'failed' ? 'Retry' : 'Waiting');
         @endphp
         <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; overflow: hidden; margin-bottom: 14px; animation: rise .45s {{ 0.06 * $loop->index }}s both;">
-            <div style="display: grid; grid-template-columns: 1.6fr 130px 90px 130px 110px; gap: 16px; padding: 15px 24px; border-bottom: 1px solid #EDE7DE; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #8A8378;">
+            <div class="fp-table-header" style="display: grid; grid-template-columns: 1.6fr 130px 90px 130px 110px; gap: 16px; padding: 15px 24px; border-bottom: 1px solid #EDE7DE; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #8A8378;">
                 <div>Task</div><div>Submitted</div><div>Score</div><div>Status</div><div style="text-align: right;"></div>
             </div>
-            <div style="display: grid; grid-template-columns: 1.6fr 130px 90px 130px 110px; gap: 16px; padding: 17px 24px; align-items: center; font-size: 13.5px; transition: background .2s;" onmouseover="this.style.background='#FBF8F3'" onmouseout="this.style.background='transparent'">
+            <div class="fp-table-row" style="display: grid; grid-template-columns: 1.6fr 130px 90px 130px 110px; gap: 16px; padding: 17px 24px; align-items: center; font-size: 13.5px; transition: background .2s;" onmouseover="this.style.background='#FBF8F3'" onmouseout="this.style.background='transparent'">
                 <div style="font-weight: 500;">{{ $submission->prompt }}</div>
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8A8378;">{{ $submission->submitted_at->format('M j') }}</div>
                 <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700; color: {{ $scoreFg }};">{{ $state === 'ok' ? (int) round((float) $submission->score) : '—' }}</div>

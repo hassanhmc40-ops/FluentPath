@@ -11,7 +11,7 @@
     </div>
 
     <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; overflow: hidden; animation: rise .5s both;">
-        <div style="display: grid; grid-template-columns: 1.4fr 80px 110px 130px 1fr; gap: 16px; padding: 15px 24px; border-bottom: 1px solid #EDE7DE; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #8A8378;">
+        <div class="fp-table-header" style="display: grid; grid-template-columns: 1.4fr 80px 110px 130px 1fr; gap: 16px; padding: 15px 24px; border-bottom: 1px solid #EDE7DE; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #8A8378;">
             <div>Student</div><div>Level</div><div>Lessons</div><div>Last active</div><div>Activity</div>
         </div>
         @forelse ($studentData as $idx => $studentInfo)
@@ -27,7 +27,7 @@
                     $spark[] = (($idx * 3 + $k * 7 + $completed * 2) % 9) + 1;
                 }
             @endphp
-            <div style="display: grid; grid-template-columns: 1.4fr 80px 110px 130px 1fr; gap: 16px; padding: 16px 24px; border-bottom: 1px solid #F1ECE3; align-items: center; font-size: 13.5px; animation: rise .45s {{ 0.05 + $idx * 0.06 }}s both; transition: background .2s;" onmouseover="this.style.background='#FBF8F3'" onmouseout="this.style.background='transparent'">
+            <div class="fp-table-row" style="display: grid; grid-template-columns: 1.4fr 80px 110px 130px 1fr; gap: 16px; padding: 16px 24px; border-bottom: 1px solid #F1ECE3; align-items: center; font-size: 13.5px; animation: rise .45s {{ 0.05 + $idx * 0.06 }}s both; transition: background .2s;" onmouseover="this.style.background='#FBF8F3'" onmouseout="this.style.background='transparent'">
                 <div style="display: flex; align-items: center; gap: 11px; min-width: 0;">
                     <span style="width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; font-weight: 600; flex: none; background: {{ $avBg }}; color: {{ $avFg }};">{{ $initial }}</span>
                     <span style="min-width: 0;">

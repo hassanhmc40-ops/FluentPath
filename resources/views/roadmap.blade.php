@@ -8,7 +8,7 @@
 
     @if ($processing)
         {{-- Processing skeleton --}}
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+        <div class="fp-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
             @foreach (range(1, 4) as $i)
                 <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px; animation: rise .6s {{ ($i - 1) * 0.09 }}s both cubic-bezier(.2,.9,.2,1);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -77,7 +77,7 @@
             }
         @endphp
 
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+        <div class="fp-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
             @foreach ($weeks->take(4) as $week)
                 @php
                     $weekLessonIds = $week->roadmapWeekLessons->pluck('lesson_id')->toArray();

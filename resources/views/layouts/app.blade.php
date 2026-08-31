@@ -62,9 +62,10 @@
     @endphp
 
     @auth
-    <div style="min-height: 100vh; display: grid; grid-template-columns: 252px 1fr; background: #F6F2EC;">
+    <div id="fp-overlay" onclick="fpCloseSidebar()"></div>
+    <div id="fp-app-wrapper" style="min-height: 100vh; display: grid; grid-template-columns: 252px 1fr; background: #F6F2EC;">
 
-        <aside style="background: #17211E; color: #EFEAE2; padding: 26px 20px; display: flex; flex-direction: column; gap: 26px; position: sticky; top: 0; height: 100vh; overflow-y: auto;">
+        <aside id="fp-sidebar" style="background: #17211E; color: #EFEAE2; padding: 26px 20px; display: flex; flex-direction: column; gap: 26px; position: sticky; top: 0; height: 100vh; overflow-y: auto;">
             <div style="display: flex; align-items: center; gap: 11px;">
                 <div style="width: 34px; height: 34px; border-radius: 11px; background: linear-gradient(140deg, #29C39F, #0E6B5C); display: grid; place-items: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; color: #06231D; font-size: 17px; animation: float 5s ease-in-out infinite;">E</div>
                 <div>
@@ -175,11 +176,14 @@
             </div>
         </aside>
 
-        <main style="min-width: 0;">
-            <header style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 38px; border-bottom: 1px solid #E5DDD2; background: rgba(246,242,236,.88); backdrop-filter: blur(9px); position: sticky; top: 0; z-index: 20;">
-                <div>
-                    <div style="font-size: 10.5px; letter-spacing: 1.7px; text-transform: uppercase; color: #8A8378;">@yield('crumb', 'English Mentor AI')</div>
-                    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -.4px; margin-top: 3px;">@yield('title', 'Dashboard')</div>
+        <main id="fp-main-content" style="min-width: 0;">
+            <header id="fp-header" style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 38px; border-bottom: 1px solid #E5DDD2; background: rgba(246,242,236,.88); backdrop-filter: blur(9px); position: sticky; top: 0; z-index: 20;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="fp-menu-toggle" onclick="fpToggleSidebar()" aria-label="Open navigation">☰</button>
+                    <div>
+                        <div style="font-size: 10.5px; letter-spacing: 1.7px; text-transform: uppercase; color: #8A8378;">@yield('crumb', 'English Mentor AI')</div>
+                        <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -.4px; margin-top: 3px;">@yield('title', 'Dashboard')</div>
+                    </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     @if ($queuedCount > 0)
@@ -233,7 +237,7 @@
                 </div>
             @endif
 
-            <div style="padding: 30px 38px 60px;">
+            <div id="fp-content-wrap" style="padding: 30px 38px 60px;">
                 @yield('content')
             </div>
         </main>
@@ -247,6 +251,30 @@
     <style>
         .fp-bell-open { display: block !important; }
     </style>
+    <script>
+    function fpToggleSidebar() {
+        var sidebar = document.getElementById('fp-sidebar');
+        var overlay = document.getElementById('fp-overlay');
+        sidebar.classList.toggle('fp-sidebar-open');
+        overlay.classList.toggle('fp-overlay-visible');
+    }
+    function fpCloseSidebar() {
+        var sidebar = document.getElementById('fp-sidebar');
+        var overlay = document.getElementById('fp-overlay');
+        sidebar.classList.remove('fp-sidebar-open');
+        overlay.classList.remove('fp-overlay-visible');
+    }
+    // Close sidebar on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fpCloseSidebar();
+    });
+    // Close sidebar on nav link click (mobile)
+    document.querySelectorAll('#fp-sidebar nav a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 900) fpCloseSidebar();
+        });
+    });
+    </script>
     @yield('scripts')
 </body>
 </html>

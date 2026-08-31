@@ -36,9 +36,9 @@
 
     @if (session('success'))
         <div style="background: #17211E; color: #EFEAE2; border-radius: 20px; padding: 46px; text-align: center; animation: rise .5s both;">
-            <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 58px; font-weight: 800; color: #29C39F; line-height: 1;">{{ (int) round((float) $lastScore) }}%</div>
+            <div class="fp-quiz-score-text" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 58px; font-weight: 800; color: #29C39F; line-height: 1;">{{ (int) round((float) $lastScore) }}%</div>
             <div style="font-size: 14.5px; color: #A6B4AE; margin-top: 12px;">Exercise recorded. The recommendation engine has re-ranked your next topics.</div>
-            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 26px;">
+            <div class="fp-success-actions" style="display: flex; gap: 12px; justify-content: center; margin-top: 26px;">
                 <a href="/quizzes/{{ $quiz->id }}" style="border: 1px solid #2C3A35; background: none; color: #EFEAE2; border-radius: 999px; padding: 12px 22px; font: inherit; font-size: 13px; text-decoration: none; transition: border-color .2s;" onmouseover="this.style.borderColor='#29C39F'" onmouseout="this.style.borderColor='#2C3A35'">Try again</a>
                 <a href="/writing" style="border: 0; background: #29C39F; color: #06231D; border-radius: 999px; padding: 12px 22px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none;">Next: writing task</a>
             </div>
@@ -58,7 +58,7 @@
                 <div id="ex-progress" style="height: 100%; background: #29C39F; border-radius: 999px; width: 0%; transition: width .4s cubic-bezier(.2,.9,.2,1);"></div>
             </div>
             <div id="ex-text" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -.5px; line-height: 1.3; margin: 26px 0 22px;"></div>
-            <div id="ex-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+            <div id="ex-options" class="fp-options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
             <div id="ex-feedback" style="display: none; margin-top: 18px; padding: 15px 18px; border-radius: 13px; font-size: 13.5px; line-height: 1.6; animation: rise .35s both;"></div>
         </div>
     @endif

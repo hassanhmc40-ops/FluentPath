@@ -12,7 +12,7 @@
 <div style="max-width: 700px; display: flex; flex-direction: column; gap: 18px; animation: fadein .4s both;">
     <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 26px; animation: rise .5s both;">
         <div style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700;">Profile</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px;">
+        <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px;">
             <label style="display: block;">
                 <span style="display: block; font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; color: #8A8378; margin-bottom: 7px;">Full name</span>
                 <input readonly value="{{ $user->name }}" style="width: 100%; border: 1px solid #E0D8CC; border-radius: 11px; padding: 12px 14px; font-size: 14px; background: #F8F5F0; color: #55605A; outline: none; cursor: default;">

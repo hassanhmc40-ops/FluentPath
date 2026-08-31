@@ -20,7 +20,7 @@
     $skeletonWidths = ['92%', '78%', '85%', '60%', '70%'];
 @endphp
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; animation: fadein .4s both;">
+<div class="fp-writing-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; animation: fadein .4s both;">
     <div style="background: #FFFDFA; border: 1px solid #E5DDD2; border-radius: 20px; padding: 26px; animation: rise .5s both;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8378;">Writing task</div>

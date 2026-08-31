@@ -8,3 +8,6 @@ class testcontroller extends Controller
 {
     //
 }
+    publec function index(){
+    return$this->
+}

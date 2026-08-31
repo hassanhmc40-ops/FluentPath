@@ -130,3 +130,143 @@ input, textarea, select, button { font-family: inherit; }
   text-transform: uppercase;
   color: #8A8378;
 }
+
+/* ============================================================
+   Responsive grid utilities — hooks only, no base properties.
+   Desktop layout is controlled by inline styles.
+   Media queries below override on smaller screens.
+   ============================================================ */
+.fp-grid-4, .fp-grid-2, .fp-hero-grid, .fp-lesson-layout,
+.fp-writing-layout, .fp-options-grid, .fp-form-grid-3,
+.fp-table-header, .fp-table-row { }
+
+/* ============================================================
+   Mobile sidebar toggle
+   ============================================================ */
+#fp-menu-toggle {
+  display: none;
+  border: 1px solid #E5DDD2;
+  background: #FFFDFA;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  flex: none;
+}
+#fp-menu-toggle:hover { background: #F3EFE8; }
+
+#fp-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 90;
+  animation: fadein .2s both;
+}
+
+/* Desktop: prevent horizontal overflow from grid children */
+@media (min-width: 901px) {
+  #fp-app-wrapper { overflow: hidden; }
+}
+
+/* ============================================================
+   Breakpoint: tablet ≤ 900px
+   ============================================================ */
+@media (max-width: 900px) {
+  /* Sidebar becomes overlay */
+  #fp-app-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #fp-sidebar {
+    position: fixed !important;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  #fp-sidebar.fp-sidebar-open {
+    transform: translateX(0);
+  }
+  #fp-overlay.fp-overlay-visible {
+    display: block;
+  }
+  #fp-menu-toggle {
+    display: flex;
+  }
+  /* Main content takes full width */
+  #fp-main-content {
+    padding-left: 0 !important;
+    min-width: 0;
+  }
+  /* Stack 2-col grids */
+  .fp-hero-grid       { grid-template-columns: 1fr !important; }
+  .fp-lesson-layout   { grid-template-columns: 1fr !important; }
+  .fp-writing-layout  { grid-template-columns: 1fr !important; }
+  .fp-grid-4          { grid-template-columns: repeat(2, 1fr) !important; }
+  .fp-grid-2          { grid-template-columns: 1fr !important; }
+  .fp-form-grid-3     { grid-template-columns: 1fr !important; }
+  .fp-options-grid    { grid-template-columns: 1fr !important; }
+  /* Header */
+  #fp-header {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* Content padding */
+  #fp-content-wrap {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 20px !important;
+  }
+  /* Notification panel */
+  #bell-panel {
+    width: calc(100vw - 32px) !important;
+    right: 16px !important;
+  }
+}
+
+/* ============================================================
+   Breakpoint: phone ≤ 640px
+   ============================================================ */
+@media (max-width: 640px) {
+  .fp-grid-4          { grid-template-columns: repeat(2, 1fr) !important; }
+  /* Tables become stacked cards */
+  .fp-table-header    { display: none !important; }
+  .fp-table-row       { grid-template-columns: 1fr !important; gap: 6px !important; padding: 14px 18px !important; }
+  /* Hero level text */
+  .fp-hero-level-text { font-size: 48px !important; letter-spacing: -2px !important; }
+  /* Placement hero */
+  .fp-placement-hero  { padding: 24px 18px !important; }
+  .fp-placement-hero-text { font-size: 26px !important; letter-spacing: -0.8px !important; }
+  .fp-placement-level-card { flex-direction: column !important; text-align: center !important; }
+  /* Lesson title */
+  .fp-lesson-title    { font-size: 24px !important; }
+  /* Quiz score hero */
+  .fp-quiz-score-text { font-size: 42px !important; }
+  /* Success banner buttons */
+  .fp-success-actions { flex-direction: column !important; }
+}
+
+/* ============================================================
+   Breakpoint: small phone ≤ 420px
+   ============================================================ */
+@media (max-width: 420px) {
+  .fp-grid-4          { grid-template-columns: 1fr !important; }
+  .fp-grid-2          { grid-template-columns: 1fr !important; }
+  /* Tighter content padding */
+  #fp-content-wrap {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  #fp-header {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}

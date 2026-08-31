@@ -33,7 +33,7 @@
                 @enderror
             </label>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+            <div class="fp-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
                 @foreach (['a', 'b', 'c', 'd'] as $option)
                     <label style="display: block;">
                         <span style="display: block; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #7E9089; margin-bottom: 7px;">Option {{ strtoupper($option) }}</span>
